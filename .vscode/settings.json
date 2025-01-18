@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "types.h": "c",
+        "colors.h": "c",
+        "consts.h": "c",
+        "piece.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "board.h": "c",
+        "movement.h": "c",
+        "trace.h": "c"
+    },
+    "editor.tabSize": 2
+}
