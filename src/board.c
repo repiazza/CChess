@@ -57,32 +57,47 @@ void vSetSquare(STRUCT_SQUARE *pSquare, const char *pszType, uint8_t ui8Color, u
   pSquare->bHighlighted = FALSE;
 }
 
-// Inicializa o tabuleiro com peças e cores padrão
 void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  for (int i = 0; i < ROW_SQUARE_COUNT; i++) {
-    for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
-      vSetSquare(&pBoard[i][j], SQUARE_TYPE_BLANK, BLANK_SQUARE_COLOR, BLANK_SIDE);
+    for (int i = 0; i < ROW_SQUARE_COUNT; i++) {
+        for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
+            pBoard[i][j].pszType = strdup(SQUARE_TYPE_BLANK);  // Tipo inicial
+            // pBoard[i][j].ui8Color = ((i + j) % 2 == 0) ? DARK_SQUARE_COLOR : LIGHT_SQUARE_COLOR; // Cor das casas
+            pBoard[i][j].ui8Side = BLANK_SIDE;                 // Lado inicial
+            pBoard[i][j].bHighlighted = FALSE;                 // Sem destaque
+        }
     }
-  }
 
-  // Configuração inicial das peças
-  const char *aszInitialPieces[] = {
-    SQUARE_TYPE_ROOK_PIECE, SQUARE_TYPE_KNIGHT_PIECE, SQUARE_TYPE_BISHOP_PIECE,
-    SQUARE_TYPE_QUEEN_PIECE, SQUARE_TYPE_KING_PIECE, SQUARE_TYPE_BISHOP_PIECE,
-    SQUARE_TYPE_KNIGHT_PIECE, SQUARE_TYPE_ROOK_PIECE
-  };
+    // Configurar peças brancas (linha 0 e 1)
+    pBoard[0][0].pszType = strdup(SQUARE_TYPE_ROOK_PIECE);   pBoard[0][0].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][1].pszType = strdup(SQUARE_TYPE_KNIGHT_PIECE); pBoard[0][1].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][2].pszType = strdup(SQUARE_TYPE_BISHOP_PIECE); pBoard[0][2].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][3].pszType = strdup(SQUARE_TYPE_QUEEN_PIECE);  pBoard[0][3].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][4].pszType = strdup(SQUARE_TYPE_KING_PIECE);   pBoard[0][4].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][5].pszType = strdup(SQUARE_TYPE_BISHOP_PIECE); pBoard[0][5].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][6].pszType = strdup(SQUARE_TYPE_KNIGHT_PIECE); pBoard[0][6].ui8Side = FRIENDLY_SIDE;
+    pBoard[0][7].pszType = strdup(SQUARE_TYPE_ROOK_PIECE);   pBoard[0][7].ui8Side = FRIENDLY_SIDE;
 
-  // Linhas de peças principais
-  for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
-    vSetSquare(&pBoard[0][j], aszInitialPieces[j], LIGHT_BGCOLOR, FRIENDLY_SIDE);
-    vSetSquare(&pBoard[7][j], aszInitialPieces[j], DARK_BGCOLOR, ENEMY_SIDE);
-  }
+    for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
+        pBoard[1][j].pszType = strdup(SQUARE_TYPE_PAWN_PIECE);
+        pBoard[1][j].ui8Side = FRIENDLY_SIDE;
+    }
 
-  // Linhas de peões
-  for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
-    vSetSquare(&pBoard[1][j], SQUARE_TYPE_PAWN_PIECE, LIGHT_BGCOLOR, FRIENDLY_SIDE);
-    vSetSquare(&pBoard[6][j], SQUARE_TYPE_PAWN_PIECE, DARK_BGCOLOR, ENEMY_SIDE);
-  }
+    // Configurar peças pretas (linha 6 e 7)
+    pBoard[7][0].pszType = strdup(SQUARE_TYPE_ROOK_PIECE);   pBoard[7][0].ui8Side = ENEMY_SIDE;
+    pBoard[7][1].pszType = strdup(SQUARE_TYPE_KNIGHT_PIECE); pBoard[7][1].ui8Side = ENEMY_SIDE;
+    pBoard[7][2].pszType = strdup(SQUARE_TYPE_BISHOP_PIECE); pBoard[7][2].ui8Side = ENEMY_SIDE;
+    pBoard[7][3].pszType = strdup(SQUARE_TYPE_QUEEN_PIECE);  pBoard[7][3].ui8Side = ENEMY_SIDE;
+    pBoard[7][4].pszType = strdup(SQUARE_TYPE_KING_PIECE);   pBoard[7][4].ui8Side = ENEMY_SIDE;
+    pBoard[7][5].pszType = strdup(SQUARE_TYPE_BISHOP_PIECE); pBoard[7][5].ui8Side = ENEMY_SIDE;
+    pBoard[7][6].pszType = strdup(SQUARE_TYPE_KNIGHT_PIECE); pBoard[7][6].ui8Side = ENEMY_SIDE;
+    pBoard[7][7].pszType = strdup(SQUARE_TYPE_ROOK_PIECE);   pBoard[7][7].ui8Side = ENEMY_SIDE;
+
+    for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
+        pBoard[6][j].pszType = strdup(SQUARE_TYPE_PAWN_PIECE);
+        pBoard[6][j].ui8Side = ENEMY_SIDE;
+    }
+
+    printf("Tabuleiro inicializado corretamente com todas as peças na posição inicial.\n");
 }
 
 // Imprime o tabuleiro para depuração

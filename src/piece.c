@@ -26,6 +26,55 @@ void vDestroyPiece(PSTRUCT_PIECE pPiece) {
   }
 }
 
+int bValidateRookMove(int iStartRow, int iStartCol, int iEndRow, int iEndCol, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  // Só permite movimento em linha ou coluna
+  if (iStartRow != iEndRow && iStartCol != iEndCol) {
+    return FALSE;
+  }
+
+  // Verifica se a casa final tem uma peça do mesmo lado
+  if (pBoard[iEndRow][iEndCol].ui8Side == pBoard[iStartRow][iStartCol].ui8Side) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+int bValidateKnightMove(int iStartRow, int iStartCol, int iEndRow, int iEndCol, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  int dx = abs(iEndRow - iStartRow);
+  int dy = abs(iEndCol - iStartCol);
+
+  // Movimento em L
+  if (!((dx == 2 && dy == 1) || (dx == 1 && dy == 2))) {
+    return FALSE;
+  }
+
+  // Verifica se a casa final tem uma peça do mesmo lado
+  if (pBoard[iEndRow][iEndCol].ui8Side == pBoard[iStartRow][iStartCol].ui8Side) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+int bValidateBishopMove(int iStartRow, int iStartCol, int iEndRow, int iEndCol, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  int dx = abs(iEndRow - iStartRow);
+  int dy = abs(iEndCol - iStartCol);
+
+  // Movimento em diagonal
+  if (dx != dy) {
+    return FALSE;
+  }
+
+  // Verifica se a casa final tem uma peça do mesmo lado
+  if (pBoard[iEndRow][iEndCol].ui8Side == pBoard[iStartRow][iStartCol].ui8Side) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+
 // Verifica se uma peça é válida
 int bIsPieceValid(PSTRUCT_PIECE pPiece) {
   if (!pPiece) return FALSE;
@@ -48,52 +97,54 @@ int bCanMove(PSTRUCT_PIECE pPiece, uint16_t ui16MovementFlags) {
   if (!bIsPieceValid(pPiece)) return FALSE;
 
   switch (pPiece->cType) {
-      case PIECE_TYPE_ROOK:
-          return ui16MovementFlags & (MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_LINE);
-      case PIECE_TYPE_KNIGHT:
-          return ui16MovementFlags & MOVEMENT_DIRECTION_L;
-      case PIECE_TYPE_BISHOP:
-          return ui16MovementFlags & MOVEMENT_DIRECTION_DIAGONAL;
-      case PIECE_TYPE_QUEEN:
-          return ui16MovementFlags & MOVEMENT_DIRECTION_ALL;
-      case PIECE_TYPE_KING:
-          return ui16MovementFlags & (MOVEMENT_DIRECTION_ALL | SPECIAL_MOVEMENT_CASTLE);
-      case PIECE_TYPE_PAWN:
-          return ui16MovementFlags & (MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_DIAGONAL);
-      default:
-          return FALSE;
+    case PIECE_TYPE_ROOK:
+      return ui16MovementFlags & (MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_LINE);
+    case PIECE_TYPE_KNIGHT:
+      return ui16MovementFlags & MOVEMENT_DIRECTION_L;
+    case PIECE_TYPE_BISHOP:
+      return ui16MovementFlags & MOVEMENT_DIRECTION_DIAGONAL;
+    case PIECE_TYPE_QUEEN:
+      return ui16MovementFlags & MOVEMENT_DIRECTION_ALL;
+    case PIECE_TYPE_KING:
+      return ui16MovementFlags & (MOVEMENT_DIRECTION_ALL | SPECIAL_MOVEMENT_CASTLE);
+    case PIECE_TYPE_PAWN:
+      return ui16MovementFlags & (MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_DIAGONAL);
+    default:
+        return FALSE;
   }
 }
 
 // Retorna o nome da peça como string
 const char *pszGetPieceTypeName(char cType) {
   switch (cType) {
-      case PIECE_TYPE_ROOK:
-          return "Rook";
-      case PIECE_TYPE_KNIGHT:
-          return "Knight";
-      case PIECE_TYPE_BISHOP:
-          return "Bishop";
-      case PIECE_TYPE_QUEEN:
-          return "Queen";
-      case PIECE_TYPE_KING:
-          return "King";
-      case PIECE_TYPE_PAWN:
-          return "Pawn";
-      default:
-          return "Unknown";
+    case PIECE_TYPE_ROOK:
+      return "Rook";
+    case PIECE_TYPE_KNIGHT:
+      return "Knight";
+    case PIECE_TYPE_BISHOP:
+      return "Bishop";
+    case PIECE_TYPE_QUEEN:
+      return "Queen";
+    case PIECE_TYPE_KING:
+      return "King";
+    case PIECE_TYPE_PAWN:
+      return "Pawn";
+    default:
+      return "Unknown";
   }
 }
-const char* pszGetPieceName(PSTRUCT_SQUARE square) {
-  if (!square || !square->pszType) return "";
+const char* pszGetPieceName(PSTRUCT_SQUARE pSquare) {
+  if (!pSquare || !pSquare->pszType) {
+    return "";
+  }
 
-  if (strcmp(square->pszType, SQUARE_TYPE_PAWN_PIECE) == 0) return "P";
-  if (strcmp(square->pszType, SQUARE_TYPE_ROOK_PIECE) == 0) return "R";
-  if (strcmp(square->pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0) return "N";
-  if (strcmp(square->pszType, SQUARE_TYPE_BISHOP_PIECE) == 0) return "B";
-  if (strcmp(square->pszType, SQUARE_TYPE_QUEEN_PIECE) == 0) return "Q";
-  if (strcmp(square->pszType, SQUARE_TYPE_KING_PIECE) == 0) return "K";
+  if (strcmp(pSquare->pszType, SQUARE_TYPE_PAWN_PIECE) == 0) return "P";
+  if (strcmp(pSquare->pszType, SQUARE_TYPE_ROOK_PIECE) == 0) return "R";
+  if (strcmp(pSquare->pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0) return "N";
+  if (strcmp(pSquare->pszType, SQUARE_TYPE_BISHOP_PIECE) == 0) return "B";
+  if (strcmp(pSquare->pszType, SQUARE_TYPE_QUEEN_PIECE) == 0) return "Q";
+  if (strcmp(pSquare->pszType, SQUARE_TYPE_KING_PIECE) == 0) return "K";
 
-  printf("Tipo desconhecido: %s\n", square->pszType);
   return "";
 }
+

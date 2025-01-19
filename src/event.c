@@ -15,24 +15,37 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
     int iRow = iMouseY / SQUARE_SIZE;
     int iCol = iMouseX / SQUARE_SIZE;
 
+    // Verifica se o clique está dentro do tabuleiro
     if (iRow < 0 || iRow >= ROW_SQUARE_COUNT || iCol < 0 || iCol >= COLUMN_SQUARE_COUNT) return;
 
     if (iSelectedRow == -1 || iSelectedCol == -1) {
-        // Sem seleção prévia: selecionar e destacar
+        // Sem seleção prévia: selecionar e calcular movimentos possíveis
         if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) != 0) {
             iSelectedRow = iRow;
             iSelectedCol = iCol;
-            vHighlightMoves(pBoard, iRow, iCol);
+
+            if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_ROOK_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, LINE_OF_SIGHT, MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_LINE);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BISHOP_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, LINE_OF_SIGHT, MOVEMENT_DIRECTION_DIAGONAL);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_QUEEN_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, LINE_OF_SIGHT, MOVEMENT_DIRECTION_ALL);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_KING_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, SQUARE_RANGE, MOVEMENT_DIRECTION_ALL);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, L_RANGE, MOVEMENT_DIRECTION_L);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_PAWN_PIECE) == 0) {
+                uint16_t direction = (pBoard[iRow][iCol].ui8Side == FRIENDLY_SIDE) ? NORTH : SOUTH;
+                vCalculateAvailableMoves(pBoard, iRow, iCol, SQUARE_RANGE, direction | MOVEMENT_DIRECTION_COLUMN);
+            }
         }
     } else {
-        // Com seleção prévia: mover ou capturar
+        // Com seleção prévia: mover, capturar ou redefinir seleção
         if (pBoard[iRow][iCol].bHighlighted) {
             if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) == 0) {
-                // Movimento simples
-                vMovePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
+                vMovePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol); // Movimento simples
             } else {
-                // Captura
-                vCapturePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
+                vCapturePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol); // Captura
             }
             vClearHighlights(pBoard);
             iSelectedRow = -1;
@@ -47,10 +60,25 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
             vClearHighlights(pBoard);
             iSelectedRow = iRow;
             iSelectedCol = iCol;
-            vHighlightMoves(pBoard, iRow, iCol);
+
+            if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_ROOK_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, LINE_OF_SIGHT, MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_LINE);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BISHOP_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, LINE_OF_SIGHT, MOVEMENT_DIRECTION_DIAGONAL);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_QUEEN_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, LINE_OF_SIGHT, MOVEMENT_DIRECTION_ALL);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_KING_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, SQUARE_RANGE, MOVEMENT_DIRECTION_ALL);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0) {
+                vCalculateAvailableMoves(pBoard, iRow, iCol, L_RANGE, MOVEMENT_DIRECTION_L);
+            } else if (strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_PAWN_PIECE) == 0) {
+                uint16_t direction = (pBoard[iRow][iCol].ui8Side == FRIENDLY_SIDE) ? NORTH : SOUTH;
+                vCalculateAvailableMoves(pBoard, iRow, iCol, SQUARE_RANGE, direction | MOVEMENT_DIRECTION_COLUMN);
+            }
         }
     }
 }
+
 
 
 
