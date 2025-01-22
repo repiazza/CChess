@@ -1,5 +1,3 @@
 *.log
 *.o
-./bin/*
 *.exe
-bin/cchess.exe
