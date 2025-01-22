@@ -5,9 +5,9 @@
 #include <consts.h>
 #include <colors.h>
 // Lados do tabuleiro
-#define FRIENDLY_SIDE 0
-#define ENEMY_SIDE    1
-#define BLANK_SIDE    2
+#define FRIENDLY_SIDE 1
+#define ENEMY_SIDE    2
+#define BLANK_SIDE    0
 
 // Total de peças
 #define TOTAL_PIECE_COUNT 32
