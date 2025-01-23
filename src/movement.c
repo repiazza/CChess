@@ -4,22 +4,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 int bProcessSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
     if (pBoard[iRow][iCol].ui8Side == ui8Side) {
         return 0; // Bloqueia se for peça do mesmo lado
     }
-
-    // Para peões, ignorar diagonal como movimento normal
-    if (pBoard[iRow][iCol].ui8Side == BLANK_SIDE && abs(iRow - iCol) == 1) {
-        return 1; // Continuar processamento
-    }
-
+    
     pBoard[iRow][iCol].bHighlighted = TRUE;
 
     // Permite captura se encontrar peça inimiga, mas interrompe o movimento
     return (pBoard[iRow][iCol].ui8Side != BLANK_SIDE) ? 0 : 1;
-
 }
+
 
 
 void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
@@ -59,8 +55,8 @@ void vHighlightPawnMoves(
     int iCol, 
     uint8_t ui8Side
 ) {
-    int iDirection = (ui8Side == FRIENDLY_SIDE) ? -1 : 1; // Brancos para cima (-1), pretos para baixo (+1)
-    int iStartRow = (ui8Side == FRIENDLY_SIDE) ? ROW_SQUARE_COUNT - 2 : 1; // Linha inicial dos peões
+    int iDirection = (ui8Side == FRIENDLY_SIDE) ? -1 : 1; // Brancas para cima (-1), pretas para baixo (+1)
+    int iStartRow = (ui8Side == FRIENDLY_SIDE) ? 1 : 6; // Linha inicial de movimento duplo
 
     // Movimento normal de 1 casa para frente
     if (iRow + iDirection >= 0 && iRow + iDirection < ROW_SQUARE_COUNT &&
@@ -79,11 +75,13 @@ void vHighlightPawnMoves(
         int iNewCol = iCol + iOffset;
         if (iNewCol >= 0 && iNewCol < COLUMN_SQUARE_COUNT &&
             iRow + iDirection >= 0 && iRow + iDirection < ROW_SQUARE_COUNT &&
-            pBoard[iRow + iDirection][iNewCol].ui8Side == ((ui8Side == FRIENDLY_SIDE) ? ENEMY_SIDE : FRIENDLY_SIDE)) {
+            pBoard[iRow + iDirection][iNewCol].ui8Side != BLANK_SIDE &&
+            pBoard[iRow + iDirection][iNewCol].ui8Side != ui8Side) {
             pBoard[iRow + iDirection][iNewCol].bHighlighted = TRUE;
         }
     }
 }
+
 
 
 

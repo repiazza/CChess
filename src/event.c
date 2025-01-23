@@ -55,22 +55,14 @@ void vHighlightPieceMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_C
     const char *pszType = pBoard[iRow][iCol].pszType;
     uint8_t ui8Side = pBoard[iRow][iCol].ui8Side;
 
-    if (strcmp(pszType, SQUARE_TYPE_ROOK_PIECE) == 0) {
-        vHighlightRookMoves(pBoard, iRow, iCol, ui8Side);
-    } else if (strcmp(pszType, SQUARE_TYPE_BISHOP_PIECE) == 0) {
-        vHighlightBishopMoves(pBoard, iRow, iCol);
-    } else if (strcmp(pszType, SQUARE_TYPE_QUEEN_PIECE) == 0) {
-        vHighlightQueenMoves(pBoard, iRow, iCol, ui8Side);
-    } else if (strcmp(pszType, SQUARE_TYPE_KING_PIECE) == 0) {
-        vHighlightKingMoves(pBoard, iRow, iCol);
-    } else if (strcmp(pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0) {
-        vHighlightKnightMoves(pBoard, iRow, iCol);
-    } else if (strcmp(pszType, SQUARE_TYPE_PAWN_PIECE) == 0) {
-        vHighlightPawnMoves(pBoard, iRow, iCol, ui8Side); // Certifique-se de que esta linha está presente
+    for (int iTargetRow = 0; iTargetRow < ROW_SQUARE_COUNT; iTargetRow++) {
+        for (int iTargetCol = 0; iTargetCol < COLUMN_SQUARE_COUNT; iTargetCol++) {
+            if (bValidatePieceMovementAndRange(pBoard, iRow, iCol, iTargetRow, iTargetCol)) {
+                pBoard[iTargetRow][iTargetCol].bHighlighted = TRUE;
+            }
+        }
     }
 }
-
-
 
 // Gerencia eventos de clique do mouse
 void vHandleMouseEvent(SDL_Event *pSDL_Event_Event) {

@@ -87,6 +87,12 @@ void vCalculateDirections(int iX, int iY, int *aiDirections);
 void vCapturePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
 void vCalculateAvailableMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, int iMaxRange, uint16_t ui16Directions, uint8_t ui8Side);
-
+int bValidatePieceMovementAndRange(
+    STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT],
+    int iStartRow,
+    int iStartCol,
+    int iTargetRow,
+    int iTargetCol
+);
 
 #endif // MOVEMENT_H
