@@ -36,6 +36,9 @@
   #define DEBUG_MSGS      giDebugLevel > 0
   #define DEBUG_MORE_MSGS giDebugLevel > 8
 
+
+  #define vTraceMsg(FORMAT, ...) vTraceMessage(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
+  #define vTraceError(FORMAT, ...) vTraceErr(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
   #define vTraceVarArgs(FORMAT, ...) _vTraceVarArgs(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
   #define vTraceBegin() vTraceVarArgs("%s - begin", __func__)
   #define vTraceEnd() vTraceVarArgs("%s - end", __func__)
@@ -80,7 +83,9 @@
    */
   void vSetDebugLevel( void );
 
-  void vTraceMsg( char *szMsg );
+  
+  void vTraceErr(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
+void vTraceMessage(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
   void vTracePid( char *szMsg, int iMsgLen );
   void vTraceMsgNoNL( char *szMsg );
   void vInitLogs( void );
@@ -101,6 +106,6 @@
    * bacagine - 2023-mm-dd - A detailed and excessive sampling of the system's environment variables
    */
   void vTraceEnvp( char **envp );
-  
+
 #endif /* _TRACE_H */
 

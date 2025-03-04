@@ -37,7 +37,7 @@ void vClearHighlights(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT
 PSTRUCT_SQUARE pCreateSquare(const char *pszType, uint8_t ui8Color, uint8_t ui8Side) {
   PSTRUCT_SQUARE pSquare = (PSTRUCT_SQUARE)malloc(sizeof(STRUCT_SQUARE));
   if (!pSquare) {
-    fprintf(stderr, "Erro: Falha ao alocar memória para uma casa.\n");
+    vTraceError( "Erro: Falha ao alocar memória para uma casa.\n");
     return NULL;
   }
 
@@ -50,7 +50,7 @@ PSTRUCT_SQUARE pCreateSquare(const char *pszType, uint8_t ui8Color, uint8_t ui8S
 }
 
 // Função auxiliar para configurar uma casa
-void vSetSquare(STRUCT_SQUARE *pSquare, const char *pszType, uint8_t ui8Color, uint8_t ui8Side) {
+void vSetSquare(STRUCT_SQUARE *pSquare, char *pszType, uint8_t ui8Color, uint8_t ui8Side) {
   pSquare->pszType = pszType;
   pSquare->ui8Color = ui8Color;
   pSquare->ui8Side = ui8Side;
@@ -61,7 +61,6 @@ void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT
     for (int i = 0; i < ROW_SQUARE_COUNT; i++) {
         for (int j = 0; j < COLUMN_SQUARE_COUNT; j++) {
             pBoard[i][j].pszType = strdup(SQUARE_TYPE_BLANK);  // Tipo inicial
-            // pBoard[i][j].ui8Color = ((i + j) % 2 == 0) ? DARK_SQUARE_COLOR : LIGHT_SQUARE_COLOR; // Cor das casas
             pBoard[i][j].ui8Side = BLANK_SIDE;                 // Lado inicial
             pBoard[i][j].bHighlighted = FALSE;                 // Sem destaque
         }

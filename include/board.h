@@ -38,7 +38,7 @@
 
 // Estruturas para o tabuleiro
 typedef struct STRUCT_SQUARE {
-  const char *pszType;  // Adicionado const para strings constantes
+  char *pszType;  // Adicionado const para strings constantes
   uint8_t ui8Color;
   uint8_t ui8Side;
   int bHighlighted;

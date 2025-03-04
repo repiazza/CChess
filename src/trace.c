@@ -111,20 +111,45 @@ void vSetConfFile( void ) {
   }
 } /* vSetConfFile */
 
-void vTraceMsg(char *szMsg) {
-  FILE *pfLog;
+void vTraceErr(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...) {
+  va_list args;
+  FILE *pfLog = NULL;
   char szTimestamp[128] = {0};
+  char szDbg[2048] = {0};
 
   vGetCurrentTimestamp(szTimestamp, sizeof(szTimestamp));
 
+  snprintf(szDbg, sizeof(szDbg), "%s[ERROR] %s:%d ", szTimestamp, kpszModuleName, kiLine);
+
   if ((pfLog = fopen(gszTraceFile, "a+")) == NULL)
-    return;
+      return;
 
-  if (giNoNL)
-    fprintf(pfLog, "%s", szMsg);
-  else 
-    fprintf(pfLog, "%s%s\n", szTimestamp, szMsg);
+  va_start(args, kpszFmt);
+  vfprintf(pfLog, strcat(szDbg, kpszFmt), args);
+  va_end(args);
 
+  fprintf(pfLog, "\n");
+  fclose(pfLog);
+}
+
+void vTraceMessage(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...) {
+  va_list args;
+  FILE *pfLog = NULL;
+  char szTimestamp[128] = {0};
+  char szDbg[2048] = {0};
+
+  vGetCurrentTimestamp(szTimestamp, sizeof(szTimestamp));
+
+  snprintf(szDbg, sizeof(szDbg), "%s %s:%d ", szTimestamp, kpszModuleName, kiLine);
+
+  if ((pfLog = fopen(gszTraceFile, "a+")) == NULL)
+      return;
+
+  va_start(args, kpszFmt);
+  vfprintf(pfLog, strcat(szDbg, kpszFmt), args);
+  va_end(args);
+
+  fprintf(pfLog, "\n");
   fclose(pfLog);
 }
 
@@ -138,7 +163,7 @@ void _vTraceVarArgs(const char *kpszModuleName, const int kiLine, const char *kp
 
   snprintf(szDbg, sizeof(szDbg), "%s%s:%d ", szTimestamp, kpszModuleName, kiLine);
 
-  if ((pfLog = fopen(gszTraceFile, "a")) == NULL)
+  if ((pfLog = fopen(gszTraceFile, "a+")) == NULL)
       return;
 
   va_start(args, kpszFmt);

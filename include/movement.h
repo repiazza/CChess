@@ -15,7 +15,7 @@ void vHighlightPawnMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
 // Declarações das funções
 void vGetPieceMovementAttributes(const char *pszType, uint8_t ui8Side, int *piMaxRange, uint16_t *pui16Directions);
 int bPathIsClear(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
-int bValidateCastle(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
+int bValidateCastle(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetCol);
 int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
 
 // Direções básicas
@@ -87,7 +87,6 @@ typedef struct STRUCT_MOVEMENT
 // Prototipação de funções
 int iValidateMove(PSTRUCT_MOVEMENT pMovement);
 void vCalculateDirections(int iX, int iY, int *aiDirections);
-void vCapturePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
 void vCalculateAvailableMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, int iMaxRange, uint16_t ui16Directions, uint8_t ui8Side);
 int bValidatePieceMovementAndRange(
