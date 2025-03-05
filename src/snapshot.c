@@ -26,7 +26,7 @@ PSTRUCT_BOARD_HISTORY pstCreateHistory()
  */
 void vAddSnapshot(PSTRUCT_BOARD_HISTORY pstHistory, STRUCT_SQUARE pstBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT])
 {
-  // Alocar novo snapshot
+  /* Alocar novo snapshot */
   PSTRUCT_BOARD_SNAPSHOT pstNewSnapshot = (PSTRUCT_BOARD_SNAPSHOT)malloc(sizeof(STRUCT_BOARD_SNAPSHOT));
   if (!pstNewSnapshot)
   {
@@ -34,22 +34,22 @@ void vAddSnapshot(PSTRUCT_BOARD_HISTORY pstHistory, STRUCT_SQUARE pstBoard[ROW_S
     exit(EXIT_FAILURE);
   }
 
-  // Copiar o estado atual do tabuleiro para o novo snapshot
-  memcpy(pNewSnapshot->stBoardSnapshot, pstBoard, sizeof(STRUCT_SQUARE) * ROW_SQUARE_COUNT * COLUMN_SQUARE_COUNT);
-  pNewSnapshot->pNext = NULL;
+  /* Copiar o estado atual do tabuleiro para o novo snapshot */
+  memcpy(pstNewSnapshot->stBoardSnapshot, pstBoard, sizeof(STRUCT_SQUARE) * ROW_SQUARE_COUNT * COLUMN_SQUARE_COUNT);
+  pstNewSnapshot->pNext = NULL;
 
-  // Adicionar o novo snapshot ao final da lista
-  if (pHistory->pstLastSS == NULL)
+  /* Adicionar o novo snapshot ao final da lista */
+  if (pstHistory->pstLastSS == NULL)
   {
-    // Lista está vazia: primeiro elemento
-    pHistory->pstFirstSS = pstNewSnapshot;
-    pHistory->pstLastSS = pstNewSnapshot;
+    /* Lista está vazia: primeiro elemento */
+    pstHistory->pstFirstSS = pstNewSnapshot;
+    pstHistory->pstLastSS = pstNewSnapshot;
   }
   else
   {
-    // Adicionar ao final da lista
-    pHistory->pstLastSS->pNext = pstNewSnapshot;
-    pHistory->pstLastSS = pstNewSnapshot;
+    /* Adicionar ao final da lista */
+    pstHistory->pstLastSS->pNext = pstNewSnapshot;
+    pstHistory->pstLastSS = pstNewSnapshot;
   }
 }
 
@@ -71,7 +71,8 @@ void vSaveHistoryToFile(PSTRUCT_BOARD_HISTORY pstHistory, const char *pszFilenam
   }
 
   printf("Histórico salvo com sucesso com %d snapshots no arquivo %s.\n", snapshotCount, pszFilename);
-  fclose(fp);
+  fclose(pfHistory);
+  pfHistory = NULL;
 }
 
 void vFreeHistory(PSTRUCT_BOARD_HISTORY pHistory)

@@ -172,7 +172,7 @@ int bCommandLineIsOK( int argc, char **argv, PSTRUCT_CMDLINE astCmdOpt ) {
             snprintf( astCmdOpt[jj].pszData, astCmdOpt[jj].lDataLength, "%s", pszParameter );
           }
         }
-      } // bLongCmd
+      } /* bLongCmd */
       else if ( bShortCmd ) {
         if ( !strcmp (pszArgument, astCmdOpt[jj].pszShort ) ) {
           astCmdOpt[jj].bSet = TRUE;
@@ -213,7 +213,7 @@ int bCommandLineIsOK( int argc, char **argv, PSTRUCT_CMDLINE astCmdOpt ) {
             snprintf(astCmdOpt[jj].pszData, astCmdOpt[jj].lDataLength, "%s", pszParameter);
           }
         }
-      } // bShortCmd
+      } /* bShortCmd */
       else {
         bLongCmd = FALSE;
         bShortCmd = FALSE;
@@ -221,7 +221,7 @@ int bCommandLineIsOK( int argc, char **argv, PSTRUCT_CMDLINE astCmdOpt ) {
         free(pszArgv);
         pszArgv = NULL;
       }
-    } // for
+    } /* for */
 
     if ( bShortCmd ) {
       free(pszParameter);
@@ -236,7 +236,7 @@ int bCommandLineIsOK( int argc, char **argv, PSTRUCT_CMDLINE astCmdOpt ) {
 
     free( pszArgv );
     pszArgv = NULL;
-  } // for
+  } /* for */
 
   return TRUE;
 } /* bCommandLineIsOK */

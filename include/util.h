@@ -21,6 +21,7 @@
   #include <ctype.h>
   #include <consts.h>
   #include <cmdline.h>
+  #include <trace.h>
   #ifdef LINUX
     #include <sys/stat.h>
     #include <libgen.h>
@@ -144,7 +145,7 @@
   /**
    *
    */
-//   int bAreCoordsInSDL_Rect( SDL_Rect *pSDL_RECT, int iX, int iY );
+/*   int bAreCoordsInSDL_Rect( SDL_Rect *pSDL_RECT, int iX, int iY ); */
 
   int iDIR_SplitFilename(char* szFilename, char* szPath, char* szName, char* szExt);
   int iDIR_IsDir(char* szDir);

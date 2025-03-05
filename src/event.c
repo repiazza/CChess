@@ -72,65 +72,43 @@ void vCapturePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], 
 
   // Marcar a posição antiga como vazia
   pBoard[iSrcRow][iSrcCol].pszType = strdup(SQUARE_TYPE_BLANK);
-  pBoard[iSrcRow][iSrcCol].ui8Side = BLANK_SIDE;
+  pBoard[iSrcRow][iSrcCol].ui8Side = NEUTRAL_SIDE;
 }
 
-void vHighlightPieceMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol)
-{
+void vHighlightPieceMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
   const char *pszType = pBoard[iRow][iCol].pszType;
   uint8_t ui8Side = pBoard[iRow][iCol].ui8Side;
 
   vTraceVarArgs("Testing highlighting possibilities for square piece: %s at (%d, %d), Side: %d", pszType, iRow, iCol, ui8Side);
 
-  if (strcmp(pszType, SQUARE_TYPE_BLANK) == 0)
-  {
+  if (strcmp(pszType, SQUARE_TYPE_BLANK) == 0) {
     vTraceVarArgs("No moves to highlight for an empty square.");
     return;
   }
 
   // Testar os lados para verificar coerência com o layout
-  if (ui8Side == FRIENDLY_SIDE)
-  {
+  if ( ui8Side == FRIENDLY_SIDE )
     vTraceVarArgs("Piece is FRIENDLY_SIDE.");
-  }
-  else if (ui8Side == ENEMY_SIDE)
-  {
+  else if ( ui8Side == ENEMY_SIDE )
     vTraceVarArgs("Piece is ENEMY_SIDE.");
-  }
   else
-  {
     vTraceVarArgs("Piece has an invalid or blank side.");
-  }
 
   // Destacar movimentos baseados no tipo da peça
-  if (strcmp(pszType, SQUARE_TYPE_PAWN_PIECE) == 0)
-  {
+  if ( strcmp(pszType, SQUARE_TYPE_PAWN_PIECE) == 0 )
     vHighlightPawnMoves(pBoard, iRow, iCol, ui8Side);
-  }
-  else if (strcmp(pszType, SQUARE_TYPE_ROOK_PIECE) == 0)
-  {
+  else if ( strcmp(pszType, SQUARE_TYPE_ROOK_PIECE) == 0 )
     vHighlightRookMoves(pBoard, iRow, iCol, ui8Side);
-  }
-  else if (strcmp(pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0)
-  {
+  else if ( strcmp(pszType, SQUARE_TYPE_KNIGHT_PIECE) == 0 )
     vHighlightKnightMoves(pBoard, iRow, iCol);
-  }
-  else if (strcmp(pszType, SQUARE_TYPE_BISHOP_PIECE) == 0)
-  {
+  else if ( strcmp(pszType, SQUARE_TYPE_BISHOP_PIECE) == 0 )
     vHighlightBishopMoves(pBoard, iRow, iCol);
-  }
-  else if (strcmp(pszType, SQUARE_TYPE_QUEEN_PIECE) == 0)
-  {
+  else if ( strcmp(pszType, SQUARE_TYPE_QUEEN_PIECE) == 0 )
     vHighlightQueenMoves(pBoard, iRow, iCol, ui8Side);
-  }
-  else if (strcmp(pszType, SQUARE_TYPE_KING_PIECE) == 0)
-  {
-    vHighlightKingMoves(pBoard, iRow, iCol);
-  }
+  else if ( strcmp(pszType, SQUARE_TYPE_KING_PIECE) == 0 )
+    vHighlightKingMoves(pBoard, iRow, iCol, ui8Side);
   else
-  {
     vTraceVarArgs("Unknown piece type: %s", pszType);
-  }
 }
 
 // Gerencia eventos de clique do mouse

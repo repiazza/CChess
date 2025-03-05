@@ -29,16 +29,18 @@ SDL_LIBS =  -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
 CCHESS_EXEC = $(BIN_DIR)/cchess
 
 # Object files
-OBJS = \
-    $(OBJ_DIR)/cchess.o \
-    $(OBJ_DIR)/colors.o \
-    $(OBJ_DIR)/trace.o  \
-    $(OBJ_DIR)/event.o  \
-    $(OBJ_DIR)/piece.o  \
-    $(OBJ_DIR)/board.o  \
-		$(OBJ_DIR)/util.o  \
-		$(OBJ_DIR)/cmdline.o  \
-    $(OBJ_DIR)/movement.o
+#OBJS = \
+#    $(OBJ_DIR)/cchess.o \
+#    $(OBJ_DIR)/colors.o \
+#    $(OBJ_DIR)/trace.o  \
+#    $(OBJ_DIR)/event.o  \
+#    $(OBJ_DIR)/piece.o  \
+#    $(OBJ_DIR)/board.o  \
+#		$(OBJ_DIR)/util.o  \
+#		$(OBJ_DIR)/cmdline.o  \
+#    $(OBJ_DIR)/movement.o
+SRC     = $(wildcard $(SRC_PATH)/*.c)
+OBJS    = $(patsubst $(SRC_PATH)/%,$(OBJ_DIR)/%,$(SRC:.c=.o))
 
 # Platform-specific settings
 ifdef _WIN32

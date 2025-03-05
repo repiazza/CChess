@@ -1,8 +1,9 @@
 #ifndef FOOTPRINT_H
   #define FOOTPRINT_H
   
-  #include <board.h> // Para STRUCT_SQUARE
-
+  #include <board.h>
+  #include <trace.h>
+  
 typedef struct STRUCT_BOARD_SNAPSHOT {
   STRUCT_SQUARE stBoardSnapshot[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT];
   struct STRUCT_BOARD_SNAPSHOT *pNext;
@@ -14,11 +15,12 @@ typedef struct STRUCT_BOARD_HISTORY {
 } STRUCT_BOARD_HISTORY, *PSTRUCT_BOARD_HISTORY;
 
 
-  // Funções públicas
-  void vInitializeHistory(BOARD_HISTORY *pHistory);
-  void vAddSnapshot(BOARD_HISTORY *pHistory, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-  void vSaveHistoryToFile(BOARD_HISTORY *pHistory, const char *pszFileName);
-  void vLoadHistoryFromFile(BOARD_HISTORY *pHistory, const char *pszFileName);
-  void vFreeHistory(BOARD_HISTORY *pHistory);
-
-#endif // FOOTPRINT_H
+  /* Funções públicas */
+  void vInitializeHistory(STRUCT_BOARD_HISTORY *pHistory);
+  void vAddSnapshot(STRUCT_BOARD_HISTORY *pHistory, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
+  void vSaveHistoryToFile(STRUCT_BOARD_HISTORY *pHistory, const char *pszFileName);
+  void vLoadHistoryFromFile(STRUCT_BOARD_HISTORY *pHistory, const char *pszFileName);
+  void vFreeHistory(STRUCT_BOARD_HISTORY *pHistory);
+  PSTRUCT_BOARD_HISTORY pstCreateHistory(void);
+  
+#endif /* FOOTPRINT_H */

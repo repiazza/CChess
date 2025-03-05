@@ -4,20 +4,20 @@
 #include <SDL2/SDL.h>
 #include <consts.h>
 #include <colors.h>
-// Lados do tabuleiro
+/* Lados do tabuleiro */
+#define NEUTRAL_SIDE  0
 #define FRIENDLY_SIDE 1
 #define ENEMY_SIDE    2
-#define BLANK_SIDE    0
 
-// Total de peças
+/* Total de peças */
 #define TOTAL_PIECE_COUNT 32
 #define PLAYER_PIECE_COUNT (TOTAL_PIECE_COUNT / 2)
 
-// Dimensões do tabuleiro
+/* Dimensões do tabuleiro */
 #define ROW_SQUARE_COUNT 8
 #define COLUMN_SQUARE_COUNT 8
 
-// Cores das casas
+/* Cores das casas */
 #define DARK_BGCOLOR  0
 #define LIGHT_BGCOLOR 1
 
@@ -26,7 +26,7 @@
 #define SQUARE_SIZE 80
 
 
-// Tipos de peças
+/* Tipos de peças */
 #define SQUARE_TYPE_PAWN_PIECE       "PAWNPIECE"
 #define SQUARE_TYPE_HIGHVALUE_PIECE  "NOTPAWNPIECE"
 #define SQUARE_TYPE_KNIGHT_PIECE     "KNIGHTPIECE"
@@ -36,24 +36,22 @@
 #define SQUARE_TYPE_ROOK_PIECE       "ROOKPIECE"
 #define SQUARE_TYPE_BLANK            "BLANK"
 
-// Estruturas para o tabuleiro
+/* Estruturas para o tabuleiro */
 typedef struct STRUCT_SQUARE {
-  char *pszType;  // Adicionado const para strings constantes
+  char *pszType;  /* Adicionado const para strings constantes */
   uint8_t ui8Color;
   uint8_t ui8Side;
   int bHighlighted;
+  int bSelected;
 } STRUCT_SQUARE, *PSTRUCT_SQUARE;
 
-
 void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-// Inicialização do tabuleiro
+/* Inicialização do tabuleiro */
 void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
 
-// Funções auxiliares
+/* Funções auxiliares */
 void vPrintBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
 void vHighlightSquare(PSTRUCT_SQUARE pSquare,   int bHighlighted);
-void vHighlightMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 void vClearHighlights(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
 
-
-#endif // BOARD_H
+#endif /* BOARD_H */

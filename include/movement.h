@@ -9,28 +9,28 @@ void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
 void vHighlightKnightMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 void vHighlightBishopMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 void vHighlightQueenMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
-void vHighlightKingMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
+void vHighlightKingMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
 void vHighlightPawnMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
 
-// Declarações das funções
+/* Declarações das funções */
 void vGetPieceMovementAttributes(const char *pszType, uint8_t ui8Side, int *piMaxRange, uint16_t *pui16Directions);
 int bPathIsClear(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
 int bValidateCastle(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetCol);
 int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
 
-// Direções básicas
+/* Direções básicas */
 #define NORTH 0x01
 #define SOUTH 0x02
 #define WEST 0x04
 #define EAST 0x08
 
-// Direções compostas
+/* Direções compostas */
 #define NORTH_WEST (NORTH | WEST)
 #define NORTH_EAST (NORTH | EAST)
 #define SOUTH_WEST (SOUTH | WEST)
 #define SOUTH_EAST (SOUTH | EAST)
 
-// Alcances e tipos de movimento
+/* Alcances e tipos de movimento */
 #define SQUARE_RANGE 1
 #define DOUBLE_SQUARE_RANGE 2
 #define L_RANGE 4
@@ -39,13 +39,13 @@ int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUN
 
 #define MOVEMENT_TYPE_NONE 0
 
-// Direções de movimento
+/* Direções de movimento */
 #define MOVEMENT_DIRECTION_COLUMN 0x01
 #define MOVEMENT_DIRECTION_LINE 0x02
 #define MOVEMENT_DIRECTION_DIAGONAL 0x04
 #define MOVEMENT_DIRECTION_L 0x08
 
-// Subtipos de movimento
+/* Subtipos de movimento */
 #define SUBTYPE_DIAG_MAIN_BEGIN 0x10
 #define SUBTYPE_DIAG_MAIN_END 0x20
 #define SUBTYPE_DIAG_OPPOSITE_BEGIN 0x40
@@ -56,12 +56,12 @@ int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUN
 #define SUBTYPE_LINE_WEST 0x1000
 #define SUBTYPE_LINE_EAST 0x2000
 
-// Movimentos especiais
+/* Movimentos especiais */
 #define SPECIAL_MOVEMENT_CASTLE 0x4000
 #define SPECIAL_MOVEMENT_EN_PASSANT 0x8000
 #define SPECIAL_MOVEMENT_PROMOTE 0x10000
 
-// Combinações de movimentos
+/* Combinações de movimentos */
 #define MOVEMENT_DIRECTION_ALL \
   (MOVEMENT_DIRECTION_COLUMN | MOVEMENT_DIRECTION_LINE | MOVEMENT_DIRECTION_DIAGONAL | MOVEMENT_DIRECTION_L)
   
@@ -74,7 +74,7 @@ int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUN
 #define MOVEMENT_TYPE_ALL \
   (MOVEMENT_DIRECTION_ALL | SPECIAL_MOVEMENT_ALL)
 
-// Estrutura de Movimento
+/* Estrutura de Movimento */
 typedef struct STRUCT_MOVEMENT
 {
   int iStartX;
@@ -84,7 +84,7 @@ typedef struct STRUCT_MOVEMENT
   uint16_t ui16MovementFlags;
 } STRUCT_MOVEMENT, *PSTRUCT_MOVEMENT;
 
-// Prototipação de funções
+/* Prototipação de funções */
 int iValidateMove(PSTRUCT_MOVEMENT pMovement);
 void vCalculateDirections(int iX, int iY, int *aiDirections);
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
@@ -96,4 +96,4 @@ int bValidatePieceMovementAndRange(
     int iTargetRow,
     int iTargetCol);
 
-#endif // MOVEMENT_H
+#endif /* MOVEMENT_H */

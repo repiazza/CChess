@@ -85,7 +85,7 @@
 
   
   void vTraceErr(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
-void vTraceMessage(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
+  void vTraceMessage(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
   void vTracePid( char *szMsg, int iMsgLen );
   void vTraceMsgNoNL( char *szMsg );
   void vInitLogs( void );
