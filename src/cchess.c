@@ -20,6 +20,11 @@
 /* Nome do programa */
 const char *gkpszProgramName;
 
+/* bacagine - 05/03/2025 - Vamos renderizar a tela apenas quando algum evento ocorrer */
+int gbRenderer = TRUE;
+
+static int gbTtfStarted = FALSE;
+
 /**
  * Renderiza texto na tela.
  */
@@ -169,19 +174,36 @@ static void vShowVersion(void) {
   );
 }
 
-/* bacagine - 05/03/2025 - Vamos renderizar a tela apenas quando algum evento ocorrer */
-int gbRenderer = TRUE;
+int bInitSDL(int iSdlFlag) {
+  if ( SDL_Init(iSdlFlag) < 0 || TTF_Init() < 0 ) {
+    vTraceError("Erro ao inicializar SDL ou TTF: %s", SDL_GetError());
+    return FALSE;
+  }
+  return TRUE;
+}
+
+void vEndSDL(TTF_Font *pFont, SDL_Renderer *pRenderer, SDL_Window *pWindow) {
+  if ( pFont && gbTtfStarted )
+    TTF_CloseFont(pFont);
+  if ( pRenderer )
+    SDL_DestroyRenderer(pRenderer);
+  if ( pWindow )
+    SDL_DestroyWindow(pWindow);
+  if ( gbTtfStarted )
+    TTF_Quit();
+  SDL_Quit();
+}
 
 /**
  * Função principal do programa.
  */
 int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
   int bRunning = TRUE;
-  PSTRUCT_BOARD_HISTORY pstHistory;
+  PSTRUCT_BOARD_HISTORY pstHistory = NULL;
   SDL_Event event;
   TTF_Font *pFont = NULL;
-  SDL_Window *pWindow;
-  SDL_Renderer *pRenderer;
+  SDL_Window *pWindow = NULL;
+  SDL_Renderer *pRenderer = NULL;
   STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT];
   
   UNUSED(pstHistory);
@@ -214,12 +236,9 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
     fprintf(stderr, "Erro: Não foi possível carregar o arquivo de configuração.\n");
     exit(EXIT_FAILURE);
   }
-
-
-  if ( SDL_Init(SDL_INIT_VIDEO) < 0 || TTF_Init() < 0 ) {
-    vTraceError("Erro ao inicializar SDL ou TTF: %s", SDL_GetError());
+  
+  if ( !bInitSDL(SDL_INIT_VIDEO) )
     return -1;
-  }
 
   pWindow = SDL_CreateWindow(
     "CSDL Chessboard",
@@ -231,27 +250,25 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
   );
   if ( !pWindow ) {
     vTraceError("Erro ao criar janela: %s\n", SDL_GetError());
-    SDL_Quit();
+    vEndSDL(pFont, pRenderer, pWindow);
     return -1;
   }
 
   pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
   if ( !pRenderer ) {
     vTraceError("Erro ao criar renderer: %s\n", SDL_GetError());
-    SDL_DestroyWindow(pWindow);
-    SDL_Quit();
+    vEndSDL(pFont, pRenderer, pWindow);
     return -1;
   }
   
   pFont = TTF_OpenFont(FONT_PATH, FONT_SIZE);
   if ( !pFont ) {
     vTraceError("Erro ao carregar fonte: %s\n", TTF_GetError());
-    SDL_DestroyRenderer(pRenderer);
-    SDL_DestroyWindow(pWindow);
-    SDL_Quit();
+    vEndSDL(pFont, pRenderer, pWindow);
     return -1;
   }
-
+  gbTtfStarted = TRUE;
+  
   vInitializeBoard(pBoard);
   pstHistory = pstCreateHistory();
   
@@ -274,12 +291,8 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
       gbRenderer = FALSE;
     }
   }
-
-  TTF_CloseFont(pFont);
-  SDL_DestroyRenderer(pRenderer);
-  SDL_DestroyWindow(pWindow);
-  TTF_Quit();
-  SDL_Quit();
+  
+  vEndSDL(pFont, pRenderer, pWindow);
 
   vTraceEnd();
 
