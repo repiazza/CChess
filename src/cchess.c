@@ -11,6 +11,7 @@
 #include <movement.h>
 #include <snapshot.h>
 #include <rect.h>
+#include <cmdline.h>
 
 /* Inicializações de fontes */
 #define FONT_PATH "./fonts/FiraCode.ttf" /* Substitua pelo caminho correto */
@@ -75,10 +76,9 @@ void vDrawBoard(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[R
       SDL_RenderFillRect(pRenderer, &SDL_Rect_Square);
 
       /* Destacar casas disponíveis */
-      if (pBoard[iRow][iCol].bHighlighted)
-      {
-          SDL_SetRenderDrawColor(pRenderer, SDL_COLOR_Highlight.r, SDL_COLOR_Highlight.g, SDL_COLOR_Highlight.b, SDL_COLOR_Highlight.a);
-          SDL_RenderFillRect(pRenderer, &SDL_Rect_Square);
+      if ( pBoard[iRow][iCol].bHighlighted) {
+        SDL_SetRenderDrawColor(pRenderer, SDL_COLOR_Highlight.r, SDL_COLOR_Highlight.g, SDL_COLOR_Highlight.b, SDL_COLOR_Highlight.a);
+        SDL_RenderFillRect(pRenderer, &SDL_Rect_Square);
       }
 
       /* Desenhar peça */
@@ -93,17 +93,41 @@ void vDrawBoard(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[R
           iCol * SQUARE_SIZE + SQUARE_SIZE / 4,
           (ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4,
           SDL_COLOR_PieceText,
-          pFont);
+          pFont
+        );
       }
     }
   }
 }
 
+static void vShowUsage(void) {
+  char szMsg[256] = "";
+  memset(szMsg, 0x00, sizeof(szMsg));
+  
+  snprintf(
+    szMsg,
+    sizeof(szMsg),
+    "Usage: %s --parameter=<argument>\n"
+    "Where parameter will be the following:\n",
+    gkpszProgramName
+  );
+  
+  vShowSyntax(szMsg, astCmdOpt);
+}
+
+static void vShowVersion(void) {
+  printf(
+    "%s [%s %s]\n",
+    gkpszProgramName,
+    __DATE__,
+    __TIME__
+  );
+}
+
 /**
  * Função principal do programa.
  */
-int SDL_main(int iArgc, char *pszArgv[])
-{
+int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
   int bRunning = TRUE;
   PSTRUCT_BOARD_HISTORY pstHistory;
   SDL_Event event;
@@ -111,41 +135,60 @@ int SDL_main(int iArgc, char *pszArgv[])
   SDL_Window *pWindow;
   SDL_Renderer *pRenderer;
   STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT];
-
+  
+  UNUSED(pstHistory);
+  
   gkpszProgramName = szGetProgramName(pszArgv[0]);
+  if ( !bCommandLineIsOK(iArgc, pszArgv, astCmdOpt) ) {
+    vShowUsage();
+    return -1;
+  }
+  
+  if ( astCmdOpt[0].bSet ) {
+    vShowUsage();
+    return 0;
+  }
+  
+  if ( astCmdOpt[1].bSet ) {
+    vShowVersion();
+    return 0;
+  }
+  
   vInitTraceConfig();
+  if ( DEBUG_MSGS ) {
+    vTraceBegin();
+    vTraceCommandLine(iArgc, pszArgv);
+  }
+  if ( DEBUG_MORE_MSGS ) vTraceEnvp(pszEnvp);
 
-  if (!bLoadCfgFile(gszConfFile))
-  {
+  if ( !bLoadCfgFile(gszConfFile) ) {
+    if ( DEBUG_MSGS ) vTraceError("Erro: Não foi possível carregar o arquivo de configuração.");
     fprintf(stderr, "Erro: Não foi possível carregar o arquivo de configuração.\n");
     exit(EXIT_FAILURE);
   }
 
-  vTraceBegin();
 
-  if (SDL_Init(SDL_INIT_VIDEO) < 0 || TTF_Init() < 0)
-  {
+  if ( SDL_Init(SDL_INIT_VIDEO) < 0 || TTF_Init() < 0 ) {
     vTraceError("Erro ao inicializar SDL ou TTF: %s", SDL_GetError());
     return -1;
   }
 
   pWindow = SDL_CreateWindow(
-      "CSDL Chessboard",
-      SDL_WINDOWPOS_CENTERED,
-      SDL_WINDOWPOS_CENTERED,
-      atoi(gstCmdLine.szWinWidth),
-      atoi(gstCmdLine.szWinHeight),
-      SDL_WINDOW_SHOWN);
-  if (!pWindow)
-  {
+    "CSDL Chessboard",
+    SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED,
+    atoi(gstCmdLine.szWinWidth),
+    atoi(gstCmdLine.szWinHeight),
+    SDL_WINDOW_SHOWN
+  );
+  if ( !pWindow ) {
     vTraceError("Erro ao criar janela: %s\n", SDL_GetError());
     SDL_Quit();
     return -1;
   }
 
   pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
-  if (!pRenderer)
-  {
+  if ( !pRenderer ) {
     vTraceError("Erro ao criar renderer: %s\n", SDL_GetError());
     SDL_DestroyWindow(pWindow);
     SDL_Quit();
@@ -153,8 +196,7 @@ int SDL_main(int iArgc, char *pszArgv[])
   }
   
   pFont = TTF_OpenFont(FONT_PATH, FONT_SIZE);
-  if (!pFont)
-  {
+  if ( !pFont ) {
     vTraceError("Erro ao carregar fonte: %s\n", TTF_GetError());
     SDL_DestroyRenderer(pRenderer);
     SDL_DestroyWindow(pWindow);
@@ -165,16 +207,12 @@ int SDL_main(int iArgc, char *pszArgv[])
   vInitializeBoard(pBoard);
   pstHistory = pstCreateHistory();
 
-  while (bRunning)
-  {
-    while (SDL_PollEvent(&event))
-    {
-      if (event.type == SDL_QUIT)
-      {
+  while ( bRunning ) {
+    while ( SDL_PollEvent(&event) ) {
+      if ( event.type == SDL_QUIT ) {
         bRunning = FALSE;
       }
-      else if (event.type == SDL_MOUSEBUTTONDOWN)
-      {
+      else if ( event.type == SDL_MOUSEBUTTONDOWN ) {
         vHandleMouseClickEvent(&event, pBoard);
       }
     }

@@ -33,8 +33,8 @@
  *                             Defines and macros                             *
  *                                                                            *
  ******************************************************************************/
-  #define DEBUG_MSGS      giDebugLevel > 0
-  #define DEBUG_MORE_MSGS giDebugLevel > 8
+  #define DEBUG_MSGS      gstTracePrm.iDebugLevel > 0
+  #define DEBUG_MORE_MSGS gstTracePrm.iDebugLevel > 8
 
 
   #define vTraceMsg(FORMAT, ...) vTraceMessage(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
@@ -49,8 +49,12 @@
  *                                                                            *
  ******************************************************************************/
 
-  extern char gszTraceFile[_MAX_PATH+_MAX_PATH];
-  extern int giDebugLevel;
+  typedef struct STRUCT_TRACE_PRM {
+    char szTraceFile[_MAX_PATH+_MAX_PATH];
+    int iDebugLevel;
+  } STRUCT_TRACE_PRM, *PSTRUCT_TRACE_PRM;
+  
+  extern STRUCT_TRACE_PRM gstTracePrm;
   extern char gszConfFile[_MAX_PATH];
 
 /******************************************************************************
@@ -66,46 +70,46 @@
    *  If not found DEBUG_LEVEL or can't read .conf file, return 0.
    *  If can read .conf file return the value of DEBUG_LEVEL
    */
-  int iGetDebugLevel( const char *kpszConfFile );
+  int iGetDebugLevel(const char *kpszConfFile);
 
   /**
    * bacagine - 2023-11-10 - Set the name of the .conf file
    */
-  void vSetConfFile( void );
+  void vSetConfFile(void);
 
   /**
    * bacagine - 2023-11-10 - Set the name of the .log file
    */
-  void vSetLogFile( void );
+  void vSetLogFile(void);
   
   /**
-   * bacagine - 2023-11-10 - Set the value of giDebugLevel
+   * bacagine - 2023-11-10 - Set the value of gstTracePrm.iDebugLevel
    */
-  void vSetDebugLevel( void );
-
+  void vSetDebugLevel(void);
   
   void vTraceErr(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
   void vTraceMessage(const char *kpszModuleName, const int kiLine, const char *kpszFmt, ...);
-  void vTracePid( char *szMsg, int iMsgLen );
-  void vTraceMsgNoNL( char *szMsg );
-  void vInitLogs( void );
+  void vTracePid(char *szMsg, int iMsgLen);
+  void vTraceMsgNoNL(char *szMsg);
+  void vInitLogs(void);
   void vInitTraceConfig(void);
+  
   /**
    * bacagine - 2023-mm-dd - Advanced trace function
    */
-  void _vTraceVarArgs( const char *kpszModuleName,
+  void _vTraceVarArgs(const char *kpszModuleName,
                        const int kiLine,
-                       const char *kpszFmt, ... );
+                       const char *kpszFmt, ...);
   
   /**
    * bacagine - 2023-mm-dd A detailed and excessive sample of what was passed on the command line
    */
-  void vTraceCommandLine( int argc, char **argv );
+  void vTraceCommandLine(int argc, char **argv);
 
   /**
    * bacagine - 2023-mm-dd - A detailed and excessive sampling of the system's environment variables
    */
-  void vTraceEnvp( char **envp );
+  void vTraceEnvp(char **envp);
 
 #endif /* _TRACE_H */
 

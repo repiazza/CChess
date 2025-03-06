@@ -12,18 +12,17 @@
   #include <unistd.h>  
 #endif /* LINUX */
 
-char gszTraceFile[_MAX_PATH+_MAX_PATH];
-int giDebugLevel = 0;
+STRUCT_TRACE_PRM gstTracePrm;
 char gszConfFile[_MAX_PATH];
 
 int giNoNL = FALSE;
 
 void vSetDebugLevel( void ) {
   if( !bStrIsEmpty( gstCmdLine.szDebugLevel ) ) {
-    giDebugLevel = atoi( gstCmdLine.szDebugLevel );
+    gstTracePrm.iDebugLevel = atoi( gstCmdLine.szDebugLevel );
   }
   else {
-    giDebugLevel = iGetDebugLevel( gszConfFile );
+    gstTracePrm.iDebugLevel = iGetDebugLevel( gszConfFile );
   }
 } /* vSetDebugLevel */
 
@@ -51,7 +50,7 @@ void vGetCurrentTimestamp(char *szTimestamp, size_t size) {
 
 // Função genérica para inicializar configuração de trace
 void vInitTraceConfig(void) {
-  memset(gszTraceFile, 0, sizeof(gszTraceFile));
+  memset(gstTracePrm.szTraceFile, 0, sizeof(gstTracePrm.szTraceFile));
   memset(gszConfFile, 0, sizeof(gszConfFile));
   
   vSetConfFile();
@@ -97,10 +96,9 @@ void vSetConfFile( void ) {
       gszConfFile[ii] = gkpszProgramName[ii];
       ii++;
     }
-
   }
 #endif /* LINUX */
-  if ( !bStrIsEmpty(gszConfFile) && !strstr(gszConfFile, "prm") ){
+  if ( !bStrIsEmpty(gszConfFile) && !strstr(gszConfFile, "prm") ) {
     char szWrk[_MAX_PATH];
     memset(szWrk, 0x00, sizeof(szWrk));
     strcpy(szWrk, "prm/");
@@ -121,7 +119,7 @@ void vTraceErr(const char *kpszModuleName, const int kiLine, const char *kpszFmt
 
   snprintf(szDbg, sizeof(szDbg), "%s[ERROR] %s:%d ", szTimestamp, kpszModuleName, kiLine);
 
-  if ((pfLog = fopen(gszTraceFile, "a+")) == NULL)
+  if ((pfLog = fopen(gstTracePrm.szTraceFile, "a+")) == NULL)
       return;
 
   va_start(args, kpszFmt);
@@ -142,7 +140,7 @@ void vTraceMessage(const char *kpszModuleName, const int kiLine, const char *kps
 
   snprintf(szDbg, sizeof(szDbg), "%s %s:%d ", szTimestamp, kpszModuleName, kiLine);
 
-  if ((pfLog = fopen(gszTraceFile, "a+")) == NULL)
+  if ((pfLog = fopen(gstTracePrm.szTraceFile, "a+")) == NULL)
       return;
 
   va_start(args, kpszFmt);
@@ -163,7 +161,7 @@ void _vTraceVarArgs(const char *kpszModuleName, const int kiLine, const char *kp
 
   snprintf(szDbg, sizeof(szDbg), "%s%s:%d ", szTimestamp, kpszModuleName, kiLine);
 
-  if ((pfLog = fopen(gszTraceFile, "a+")) == NULL)
+  if ((pfLog = fopen(gstTracePrm.szTraceFile, "a+")) == NULL)
       return;
 
   va_start(args, kpszFmt);
@@ -172,5 +170,20 @@ void _vTraceVarArgs(const char *kpszModuleName, const int kiLine, const char *kp
 
   fprintf(pfLog, "\n");
   fclose(pfLog);
+}
+
+void vTraceCommandLine(int argc, char **argv) {
+  int ii = 0;
+  vTraceVarArgs("argc [%d]", argc);
+  for ( ii = 0; ii < argc; ii++ ) {
+    vTraceVarArgs("%d: [%s]", ii, argv[ii]);
+  }
+}
+
+void vTraceEnvp(char **envp) {
+  int ii = 0;
+  for ( ii = 0; envp[ii]; ii++ ) {
+    vTraceVarArgs("%d: [%s]", ii, envp[ii]);
+  }
 }
 

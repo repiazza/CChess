@@ -361,21 +361,21 @@ void vSetLogFile( void ) {
 #endif /* _WIN32 */
 
   if(!bStrIsEmpty( gstCmdLine.szTraceFile ) ) {
-    snprintf( gszTraceFile, (size_t) sizeof( gszTraceFile ) - 8, "%s", gstCmdLine.szTraceFile );
+    snprintf( gstTracePrm.szTraceFile, (size_t) sizeof( gstTracePrm.szTraceFile ) - 8, "%s", gstCmdLine.szTraceFile );
     return;
   }
 #ifdef LINUX
   else {
-    snprintf( gszTraceFile, sizeof( gszTraceFile ), "%s.log", gkpszProgramName );
+    snprintf( gstTracePrm.szTraceFile, sizeof( gstTracePrm.szTraceFile ), "%s.log", gkpszProgramName );
     return;
   }
 #else
   else {
     while ( gkpszProgramName[ii] != '.' ) {
-      gszTraceFile[ii] = gkpszProgramName[ii];
+      gstTracePrm.szTraceFile[ii] = gkpszProgramName[ii];
       ii++;
     }
-    strcat( gszTraceFile, ".log" );
+    strcat( gstTracePrm.szTraceFile, ".log" );
   }
 #endif /* LINUX */
 } /* vSetLogFile */

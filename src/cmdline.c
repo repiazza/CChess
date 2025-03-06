@@ -44,16 +44,11 @@ STRUCT_CMDLINE astCmdOpt[] = {
     "<file> is the path of the configuration file"
   },
 /* 05 */
-  { "cat",         "c",                  CMDDATA_NODATA,            CMDTYPE_NULL,                    "",
-     FALSE,         "0",                  NULL,                      0,
-    "This is top secret ;)"
-  },
-/* 06 */
   { "win-heigth",  "H",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "0",                  gstCmdLine.szWinHeight,    sizeof(gstCmdLine.szWinHeight),
     "<number> is the Window Height"
   },
-/* 07 */
+/* 06 */
   { "win-width",   "W",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "0",                  gstCmdLine.szWinWidth,     sizeof(gstCmdLine.szWinWidth),
     "<number> is the Window Width"
@@ -137,7 +132,7 @@ int bCommandLineIsOK( int argc, char **argv, PSTRUCT_CMDLINE astCmdOpt ) {
 
       pszParameter = strtok(NULL, "=");
 
-      strcpy(pszArgument, &pszArgument[2]);
+      pszArgument = &pszArgument[2];
     }
     else if ( argv[ii][0] == '-' ) {
       bShortCmd = TRUE;
@@ -152,7 +147,7 @@ int bCommandLineIsOK( int argc, char **argv, PSTRUCT_CMDLINE astCmdOpt ) {
 
       return FALSE;
     }
-
+    
     for ( jj = 0; astCmdOpt[jj].iRequired != CMDDATA_NULL; jj++ ) {
       if ( bLongCmd ) {
         if ( !strcmp ( pszArgument, astCmdOpt[jj].pszLong ) ) {
