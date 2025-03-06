@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 int bValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
-   /* Bloqueia se for peça do mesmo lado */
+  /* Bloqueia se for peça do mesmo lado */
   if ( pBoard[iRow][iCol].ui8Side == ui8Side )
     return FALSE;
   if ( iRow < 0 && iRow >= ROW_SQUARE_COUNT && iCol < 0 && iCol >= COLUMN_SQUARE_COUNT )
@@ -17,6 +17,7 @@ int bValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUAR
 void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
   int ii = 0;
   int jj = 0;
+  
   if ( DEBUG_MSGS ) {
     vTraceVarArgs("Calculating rook moves for (%d, %d), side: %d",
       iRow,
@@ -25,7 +26,7 @@ void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
     );
   }
 
-  for ( ii = iRow - 1; ii >= 0; ii--) { // Norte
+  for ( ii = iRow - 1; ii >= 0; ii-- ) { // Norte
     if ( !bValidateSquareHighlight(pBoard, ii, iCol, ui8Side) )
       break;
     if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", ii, iCol);
@@ -44,7 +45,7 @@ void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
     pBoard[iRow][jj].bHighlighted = TRUE;
   }
   
-  for ( jj = iCol + 1; jj < COLUMN_SQUARE_COUNT; jj++) { // Leste
+  for ( jj = iCol + 1; jj < COLUMN_SQUARE_COUNT; jj++ ) { // Leste
     if (!bValidateSquareHighlight(pBoard, iRow, jj, ui8Side))
       break;
     if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", iRow, jj);
@@ -54,7 +55,8 @@ void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
 
 void vHighlightKingMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
   int aiOffsets[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
-  for ( int ii = 0; ii < 8; ii++ ) {
+  int ii = 0;
+  for ( ii = 0; ii < 8; ii++ ) {
     int iNewRow = iRow + aiOffsets[ii][0];
     int iNewCol = iCol + aiOffsets[ii][1];
     // Evitar aliados

@@ -53,6 +53,51 @@ void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL
   SDL_DestroyTexture(pTexture);
 }
 
+void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  int iRow = 0;
+  int iCol = 0;
+  char szDbg[256] = "";
+  
+  memset(szDbg, 0x00, sizeof(szDbg));
+  
+  snprintf(
+    &szDbg[strlen(szDbg)],
+    sizeof(szDbg),
+    "\n"
+  );
+  
+  /* Inverte apenas o loop de desenho das linhas */
+  for ( iRow = ROW_SQUARE_COUNT - 1; iRow >= 0; iRow-- ) { /* Decrementa as linhas */
+    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
+      const char *pszPieceName = NULL;
+      
+      pszPieceName = pszGetPieceName(&pBoard[iRow][iCol]);
+      if ( pszPieceName && strlen(pszPieceName) > 0 ) {
+        snprintf(
+          &szDbg[strlen(szDbg)],
+          sizeof(szDbg),
+          "%s",
+          pszPieceName
+        );
+      }
+      else {
+        snprintf(
+          &szDbg[strlen(szDbg)],
+          sizeof(szDbg),
+          "_"
+        );
+      }
+    }
+    snprintf(
+      &szDbg[strlen(szDbg)],
+      sizeof(szDbg),
+      "\n"
+    );
+  }
+  
+  vTraceMsg(szDbg);
+}
+
 /**
  * Renderiza o tabuleiro e as peças.
  */
@@ -123,6 +168,9 @@ static void vShowVersion(void) {
     __TIME__
   );
 }
+
+/* bacagine - 05/03/2025 - Vamos renderizar a tela apenas quando algum evento ocorrer */
+int gbRenderer = TRUE;
 
 /**
  * Função principal do programa.
@@ -206,7 +254,7 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
 
   vInitializeBoard(pBoard);
   pstHistory = pstCreateHistory();
-
+  
   while ( bRunning ) {
     while ( SDL_PollEvent(&event) ) {
       if ( event.type == SDL_QUIT ) {
@@ -216,13 +264,15 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
         vHandleMouseClickEvent(&event, pBoard);
       }
     }
-
-    SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(pRenderer);
-
-    vDrawBoard(pRenderer, pFont, pBoard);
-
-    SDL_RenderPresent(pRenderer);
+    
+    if ( gbRenderer ) {
+      SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+      SDL_RenderClear(pRenderer);
+      vDrawBoard(pRenderer, pFont, pBoard);
+      if ( DEBUG_MORE_MSGS ) vTraceBoard(pBoard);
+      SDL_RenderPresent(pRenderer);
+      gbRenderer = FALSE;
+    }
   }
 
   TTF_CloseFont(pFont);

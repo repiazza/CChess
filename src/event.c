@@ -3,10 +3,13 @@
 #include <board.h>
 #include <movement.h>
 
+extern int gbRenderer;
+
 static int iCurrentTurn = FRIENDLY_SIDE; // Turno inicial: peças brancas
 
 void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  static int iSelectedRow = -1, iSelectedCol = -1;
+  static int iSelectedRow = -1;
+  static int iSelectedCol = -1;
   int iMouseX = 0;
   int iMouseY = 0;
   int iRow = 0;
@@ -14,7 +17,9 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   
   if ( pEvent->type != SDL_MOUSEBUTTONDOWN )
     return;
-
+  
+  gbRenderer = TRUE;
+  
   iMouseX = pEvent->button.x;
   iMouseY = pEvent->button.y;
   iRow = (ROW_SQUARE_COUNT - 1) - (iMouseY / SQUARE_SIZE);
