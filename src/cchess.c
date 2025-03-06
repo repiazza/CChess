@@ -209,7 +209,11 @@ void vRenderer(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[RO
 /**
  * Função principal do programa.
  */
+#ifdef LINUX
 int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
+#else
+int SDL_main(int iArgc, char *pszArgv[]) {
+#endif
   int bRunning = TRUE;
   PSTRUCT_BOARD_HISTORY pstHistory = NULL;
   SDL_Event event;
@@ -241,7 +245,9 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
     vTraceBegin();
     vTraceCommandLine(iArgc, pszArgv);
   }
+  #ifdef LINUX
   if ( DEBUG_MORE_MSGS ) vTraceEnvp(pszEnvp);
+  #endif
 
   if ( !bLoadCfgFile(gszConfFile) ) {
     if ( DEBUG_MSGS ) vTraceError("Erro: Não foi possível carregar o arquivo de configuração.");
