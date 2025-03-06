@@ -12,6 +12,7 @@
 #include <snapshot.h>
 #include <rect.h>
 #include <cmdline.h>
+#include <openings.h>
 
 /* Inicializações de fontes */
 #define FONT_PATH "./fonts/FiraCode.ttf" /* Substitua pelo caminho correto */
@@ -194,6 +195,17 @@ void vEndSDL(TTF_Font *pFont, SDL_Renderer *pRenderer, SDL_Window *pWindow) {
   SDL_Quit();
 }
 
+void vRenderer(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  if ( gbRenderer ) {
+    SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(pRenderer);
+    vDrawBoard(pRenderer, pFont, pBoard);
+    if ( DEBUG_MORE_MSGS ) vTraceBoard(pBoard);
+    SDL_RenderPresent(pRenderer);
+    gbRenderer = FALSE;
+  }
+}
+
 /**
  * Função principal do programa.
  */
@@ -281,15 +293,7 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
         vHandleMouseClickEvent(&event, pBoard);
       }
     }
-    
-    if ( gbRenderer ) {
-      SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
-      SDL_RenderClear(pRenderer);
-      vDrawBoard(pRenderer, pFont, pBoard);
-      if ( DEBUG_MORE_MSGS ) vTraceBoard(pBoard);
-      SDL_RenderPresent(pRenderer);
-      gbRenderer = FALSE;
-    }
+    vRenderer(pRenderer, pFont, pBoard);
   }
   
   vEndSDL(pFont, pRenderer, pWindow);
