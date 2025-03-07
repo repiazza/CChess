@@ -26,6 +26,9 @@ int gbRenderer = TRUE;
 
 static int gbTtfStarted = FALSE;
 
+char *gpszCurrentWhiteOpegning = NULL;
+char *gpszCurrentBlackOpegning = NULL;
+
 /**
  * Renderiza texto na tela.
  */
@@ -59,16 +62,15 @@ void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL
   SDL_DestroyTexture(pTexture);
 }
 
-void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   int iRow = 0;
   int iCol = 0;
-  char szDbg[256] = "";
   
-  memset(szDbg, 0x00, sizeof(szDbg));
+  if ( pszOutput == NULL || lOutputSize <= 0 ) return;
   
   snprintf(
-    &szDbg[strlen(szDbg)],
-    sizeof(szDbg),
+    &pszOutput[strlen(pszOutput)],
+    lOutputSize,
     "\n"
   );
   
@@ -80,27 +82,32 @@ void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
       pszPieceName = pszGetPieceName(&pBoard[iRow][iCol]);
       if ( pszPieceName && strlen(pszPieceName) > 0 ) {
         snprintf(
-          &szDbg[strlen(szDbg)],
-          sizeof(szDbg),
+          &pszOutput[strlen(pszOutput)],
+          lOutputSize,
           "%s",
           pszPieceName
         );
       }
       else {
         snprintf(
-          &szDbg[strlen(szDbg)],
-          sizeof(szDbg),
+          &pszOutput[strlen(pszOutput)],
+          lOutputSize,
           "_"
         );
       }
     }
     snprintf(
-      &szDbg[strlen(szDbg)],
-      sizeof(szDbg),
+      &pszOutput[strlen(pszOutput)],
+      lOutputSize,
       "\n"
     );
   }
-  
+}
+
+void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  char szDbg[256] = "";
+  memset(szDbg, 0x00, sizeof(szDbg));
+  vConvertBoard2String(szDbg, sizeof(szDbg), pBoard);
   vTraceMsg(szDbg);
 }
 
@@ -118,7 +125,7 @@ void vDrawBoard(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[R
   for ( iRow = ROW_SQUARE_COUNT - 1; iRow >= 0; iRow-- ) { /* Decrementa as linhas */
     for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
       /* Determinar a cor da casa */
-      SDL_Rect SDL_Rect_Square = {iCol * SQUARE_SIZE, (ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+      SDL_Rect SDL_Rect_Square = {iCol * SQUARE_SIZE, ((ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE)+INFO_RECT_HEIGHT, SQUARE_SIZE, SQUARE_SIZE};
       SDL_Color SDL_COLOR_Current = (iRow + iCol) % 2 == 0 ? SDL_COLOR_Light : SDL_COLOR_Dark;
       const char *pszPieceName = NULL;
       
@@ -141,13 +148,145 @@ void vDrawBoard(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[R
         vRenderText(
           pRenderer,
           pszPieceName,
-          iCol * SQUARE_SIZE + SQUARE_SIZE / 4,
-          (ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4,
+          (iCol * SQUARE_SIZE + SQUARE_SIZE / 4),
+          ((ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4)+50,
           SDL_COLOR_PieceText,
           pFont
         );
       }
     }
+  }
+  
+  if ( DEBUG_MORE_MSGS ) vTraceBoard(pBoard);
+}
+
+int bInitSDL(Uint32 ui32SdlFlag) {
+  if ( SDL_Init(ui32SdlFlag) < 0 || TTF_Init() < 0 ) {
+    vTraceError("Erro ao inicializar SDL ou TTF: %s", SDL_GetError());
+    return FALSE;
+  }
+  return TRUE;
+}
+
+void vEndSDL(TTF_Font *pFont, SDL_Renderer *pRenderer, SDL_Window *pWindow) {
+  if ( pFont && gbTtfStarted )
+    TTF_CloseFont(pFont);
+  if ( pRenderer )
+    SDL_DestroyRenderer(pRenderer);
+  if ( pWindow )
+    SDL_DestroyWindow(pWindow);
+  if ( gbTtfStarted )
+    TTF_Quit();
+  SDL_Quit();
+}
+
+void vDrawHeaderRect(SDL_Renderer *pRenderer) {
+  SDL_Rect stHeaderRect = { 0, 0, 800, INFO_RECT_HEIGHT };
+  SDL_SetRenderDrawColor(pRenderer, 128, 128, 128, 255);
+  SDL_RenderFillRect(pRenderer, &stHeaderRect);
+}
+
+void vDrawFooterRect(SDL_Renderer *pRenderer) {
+  SDL_Rect stFooterRect = { 0, 690, 800, INFO_RECT_HEIGHT };
+  SDL_SetRenderDrawColor(pRenderer, 128, 128, 128, 255);
+  SDL_RenderFillRect(pRenderer, &stFooterRect);
+}
+
+void vDrawWhiteOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  char szBoard[124] = "";
+  char szText[512] = "";
+  char *pszOpeningName = NULL;
+  SDL_Color stBlackColor = { 0, 0, 0, 255 };
+  int iX = 10;
+  int iY = 700;
+  
+  memset(szBoard, 0x00, sizeof(szBoard));
+  memset(szText , 0x00, sizeof(szText ));
+  
+  vConvertBoard2String(szBoard, sizeof(szBoard), pBoard);
+  vRemoveChar(szBoard, sizeof(szBoard), '\n');
+  
+  pszOpeningName = pszGetOpeningName(szBoard);
+  
+  if ( !bStrIsEmpty(pszOpeningName) )
+    gpszCurrentWhiteOpegning = pszOpeningName;
+  
+  snprintf(
+    szText,
+    sizeof(szText),
+    "Opening: %s",
+    bStrIsEmpty(gpszCurrentWhiteOpegning) ? "" : gpszCurrentWhiteOpegning
+  );
+  
+  if ( DEBUG_MSGS ) vTraceMsg(szText);
+  
+  vRenderText(
+    pRenderer,
+    szText,
+    iX,
+    iY,
+    stBlackColor,
+    pFont
+  );
+}
+
+void vDrawBlackOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  char szBoard[124] = "";
+  char szText[512] = "";
+  char *pszOpeningName = NULL;
+  SDL_Color stBlackColor = { 0, 0, 0, 255 };
+  int iX = 10;
+  int iY = 10;
+  
+  memset(szBoard, 0x00, sizeof(szBoard));
+  memset(szText , 0x00, sizeof(szText ));
+  
+  vConvertBoard2String(szBoard, sizeof(szBoard), pBoard);
+  vRemoveChar(szBoard, sizeof(szBoard), '\n');
+  vInvertStr(szBoard);
+  
+  pszOpeningName = pszGetOpeningName(szBoard);
+  
+  if ( !bStrIsEmpty(pszOpeningName) )
+    gpszCurrentBlackOpegning = pszOpeningName;
+    
+  snprintf(
+    szText,
+    sizeof(szText),
+    "Opening: %s",
+    bStrIsEmpty(gpszCurrentBlackOpegning) ? "" : gpszCurrentBlackOpegning
+  );
+  
+  if ( DEBUG_MSGS ) vTraceMsg(szText);
+  
+  vRenderText(
+    pRenderer,
+    szText,
+    iX,
+    iY,
+    stBlackColor,
+    pFont
+  );
+}
+
+void vDrawOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  vDrawWhiteOpenings(pRenderer, pFont, pBoard);
+  vDrawBlackOpenings(pRenderer, pFont, pBoard);
+}
+
+void vRenderer(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  if ( gbRenderer ) {
+    SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(pRenderer);
+    
+    vDrawHeaderRect(pRenderer);
+    vDrawBoard(pRenderer, pFont, pBoard);
+    vDrawFooterRect(pRenderer);
+    
+    vDrawOpenings(pRenderer, pFont, pBoard);
+    
+    SDL_RenderPresent(pRenderer);
+    gbRenderer = FALSE;
   }
 }
 
@@ -173,37 +312,6 @@ static void vShowVersion(void) {
     __DATE__,
     __TIME__
   );
-}
-
-int bInitSDL(int iSdlFlag) {
-  if ( SDL_Init(iSdlFlag) < 0 || TTF_Init() < 0 ) {
-    vTraceError("Erro ao inicializar SDL ou TTF: %s", SDL_GetError());
-    return FALSE;
-  }
-  return TRUE;
-}
-
-void vEndSDL(TTF_Font *pFont, SDL_Renderer *pRenderer, SDL_Window *pWindow) {
-  if ( pFont && gbTtfStarted )
-    TTF_CloseFont(pFont);
-  if ( pRenderer )
-    SDL_DestroyRenderer(pRenderer);
-  if ( pWindow )
-    SDL_DestroyWindow(pWindow);
-  if ( gbTtfStarted )
-    TTF_Quit();
-  SDL_Quit();
-}
-
-void vRenderer(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  if ( gbRenderer ) {
-    SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(pRenderer);
-    vDrawBoard(pRenderer, pFont, pBoard);
-    if ( DEBUG_MORE_MSGS ) vTraceBoard(pBoard);
-    SDL_RenderPresent(pRenderer);
-    gbRenderer = FALSE;
-  }
 }
 
 /**

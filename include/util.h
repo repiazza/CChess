@@ -151,6 +151,10 @@
   int iDIR_IsDir(char* szDir);
   int iDIR_MkDir(char *szDir);
   int bStrIsEmpty(const char *kpszStr);
+  
+  void vRemoveChar(char *pszStr, size_t lStrSize, char chCh);
+  void vInvertStr(char *pszStr);
+
 
   #endif /* _UTIL_H_ */
 

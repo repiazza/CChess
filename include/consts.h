@@ -27,7 +27,9 @@
   #ifndef TRUE
     #define TRUE  1
   #endif /* TRUE */
-
+  
+  #define INFO_RECT_HEIGHT 50
+  
   /**
    * This macro is used to remove
    * unused warnings during the

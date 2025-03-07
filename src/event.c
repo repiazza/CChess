@@ -21,7 +21,7 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   gbRenderer = TRUE;
   
   iMouseX = pEvent->button.x;
-  iMouseY = pEvent->button.y;
+  iMouseY = pEvent->button.y-INFO_RECT_HEIGHT;
   iRow = (ROW_SQUARE_COUNT - 1) - (iMouseY / SQUARE_SIZE);
   iCol = iMouseX / SQUARE_SIZE;
 

@@ -9,21 +9,28 @@
 #include <openings.h>
 
 STRUCT_OPENING gastOpenings[] = {
-  { "London"              , LONDON_OPENING       },
-  { "King's Idian Defense", KINGS_INDIAN_DEFENSE },
-  { NULL                  , NULL                 }
+  { "London"               , LONDON_OPENING       },
+  { "Italian"              , ITALIAN_OPENING      },
+  { "Ruy Lopez"            , RUY_LOPEZ            },
+  { "King's Gambit"        , KINGS_GAMBIT          },
+  { "Queen's Gambit"       , QUEENS_GAMBIT         },
+  { "King's Indian Defense", KINGS_INDIAN_DEFENSE },
+  { NULL                   , NULL                 }
 };
 
-const char *kpszGetOpeningName(char *szBoard) {
-  char *kszOpeningBoard = NULL;
+char *pszGetOpeningName(char *szBoard) {
+  char *pszOpeningBoard32 = NULL;
+  char *pszOpeningBoard24 = NULL;
   int ii = 0;
   
   if ( bStrIsEmpty(szBoard) ) return NULL;
   
-  kszOpeningBoard = &szBoard[32];
+  pszOpeningBoard32 = &szBoard[32];
+  pszOpeningBoard24 = &szBoard[24];
   
   for ( ii = 0; gastOpenings[ii].kpszOpeningName; ii++ ) {
-    if ( !strcmp(kszOpeningBoard, gastOpenings[ii].kpszOpeningBoard) )
+    if ( !strcmp(pszOpeningBoard32, gastOpenings[ii].kpszOpeningBoard) ||
+          !strcmp(pszOpeningBoard24, gastOpenings[ii].kpszOpeningBoard) )
       return gastOpenings[ii].kpszOpeningName;
   }
   

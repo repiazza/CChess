@@ -490,3 +490,32 @@ void vPrintWarningMessage( const char* kpszFmt, ... ) {
 
   va_end( args );
 } /* vPrintWarningMessage */
+
+void vRemoveChar(char *pszStr, size_t lStrSize, char chCh) {
+  char szAux[lStrSize];
+  int ii = 0;
+  int jj = 0;
+  memset(szAux, 0x00, lStrSize);
+  for ( ii = 0; pszStr[ii]; ii++ ) {
+    if ( pszStr[ii] != chCh ) {
+      szAux[jj] = pszStr[ii];
+      jj++;
+    }
+  }
+  szAux[jj] = '\0';
+  snprintf(pszStr, lStrSize, "%s", szAux);
+}
+
+void vInvertStr(char *pszStr) {
+  size_t lStrSize = strlen(pszStr);
+  char szAux[lStrSize+1];
+  int ii = 0;
+  int jj = 0;
+  memset(szAux, 0x00, sizeof(szAux));
+  for ( ii = lStrSize-1; ii >= 0; ii-- ) {
+    szAux[jj] = pszStr[ii];
+    jj++;
+  }
+  szAux[jj] = '\0';
+  snprintf(pszStr, lStrSize+1, "%s", szAux);
+}

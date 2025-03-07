@@ -82,7 +82,7 @@ void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT
     pBoard[6][jj].ui8Side = ENEMY_SIDE;
   }
 
-  printf("Tabuleiro inicializado corretamente com todas as peças na posição inicial.\n");
+  vTraceMsg("Tabuleiro inicializado corretamente com todas as pecas na posicao inicial.");
 }
 
 /* Imprime o tabuleiro para depuração */
