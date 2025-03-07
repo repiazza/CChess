@@ -1,1 +1,1 @@
-make LINUX=1 cchess 
+make LINUX=1 bin/cchess 
