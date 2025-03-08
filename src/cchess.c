@@ -24,21 +24,25 @@ const char *gkpszProgramName;
 /* bacagine - 05/03/2025 - Vamos renderizar a tela apenas quando algum evento ocorrer */
 int gbRenderer = TRUE;
 
-static int gbTtfStarted = FALSE;
-
 char *gpszCurrentWhiteOpegning = NULL;
 char *gpszCurrentBlackOpegning = NULL;
 
 /**
  * Renderiza texto na tela.
  */
-void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL_Color color, TTF_Font *pFont) {
+void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL_Color color, const char *kpszFontPath, const int kiFontSize) {
   SDL_Surface *pSurface = NULL;
   SDL_Texture *pTexture = NULL;
   SDL_Rect rect;
+  TTF_Font *pFont = NULL;
   
-  if ( !pszText || !pFont ) {
-    vTraceError("Erro: Texto ou fonte inválidos. Texto: %s\n", pszText ? pszText : "NULL");
+  if ( !pszText ) {
+    vTraceError("Erro: Texto inválido. Texto: %s\n", pszText ? pszText : "NULL");
+    return;
+  }
+  
+  if ( !bOpenFont(&pFont, kpszFontPath, kiFontSize) ) {
+    vTraceError("Erro ao abrir a fonte [%s]: %s", kpszFontPath, TTF_GetError());
     return;
   }
 
@@ -60,6 +64,8 @@ void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL
 
   SDL_FreeSurface(pSurface);
   SDL_DestroyTexture(pTexture);
+  
+  vCloseFont(&pFont);
 }
 
 void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
@@ -114,7 +120,7 @@ void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
 /**
  * Renderiza o tabuleiro e as peças.
  */
-void vDrawBoard(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+void vDrawBoard(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   int iRow = 0;
   int iCol = 0;
   SDL_Color SDL_COLOR_Dark = SDL_COLOR_GetDarkSquareColor();
@@ -151,7 +157,8 @@ void vDrawBoard(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[R
           (iCol * SQUARE_SIZE + SQUARE_SIZE / 4),
           ((ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4)+50,
           SDL_COLOR_PieceText,
-          pFont
+          kpszFontPath,
+          kiFontSize
         );
       }
     }
@@ -168,15 +175,12 @@ int bInitSDL(Uint32 ui32SdlFlag) {
   return TRUE;
 }
 
-void vEndSDL(TTF_Font *pFont, SDL_Renderer *pRenderer, SDL_Window *pWindow) {
-  if ( pFont && gbTtfStarted )
-    TTF_CloseFont(pFont);
+void vEndSDL(SDL_Renderer *pRenderer, SDL_Window *pWindow) {
   if ( pRenderer )
     SDL_DestroyRenderer(pRenderer);
   if ( pWindow )
     SDL_DestroyWindow(pWindow);
-  if ( gbTtfStarted )
-    TTF_Quit();
+  TTF_Quit();
   SDL_Quit();
 }
 
@@ -192,16 +196,22 @@ void vDrawFooterRect(SDL_Renderer *pRenderer) {
   SDL_RenderFillRect(pRenderer, &stFooterRect);
 }
 
-void vDrawWhiteOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+void vDrawWhiteOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   char szBoard[124] = "";
   char szText[512] = "";
   char *pszOpeningName = NULL;
   SDL_Color stBlackColor = { 0, 0, 0, 255 };
   int iX = 10;
   int iY = 700;
+  TTF_Font *pFont = NULL;
   
   memset(szBoard, 0x00, sizeof(szBoard));
   memset(szText , 0x00, sizeof(szText ));
+  
+  if ( !bOpenFont(&pFont, kpszFontPath, kiFontSize) ) {
+    vTraceError("Erro ao abrir a fonte [%s]: %s", kpszFontPath, TTF_GetError());
+    return;
+  }
   
   vConvertBoard2String(szBoard, sizeof(szBoard), pBoard);
   vRemoveChar(szBoard, sizeof(szBoard), '\n');
@@ -220,17 +230,21 @@ void vDrawWhiteOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE 
   
   if ( DEBUG_MSGS ) vTraceMsg(szText);
   
+  vCloseFont(&pFont);
+  
   vRenderText(
     pRenderer,
     szText,
     iX,
     iY,
     stBlackColor,
-    pFont
+    kpszFontPath,
+    kiFontSize
   );
+  
 }
 
-void vDrawBlackOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+void vDrawBlackOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   char szBoard[124] = "";
   char szText[512] = "";
   char *pszOpeningName = NULL;
@@ -265,25 +279,65 @@ void vDrawBlackOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE 
     iX,
     iY,
     stBlackColor,
-    pFont
+    kpszFontPath,
+    kiFontSize
   );
 }
 
-void vDrawOpenings(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  vDrawWhiteOpenings(pRenderer, pFont, pBoard);
-  vDrawBlackOpenings(pRenderer, pFont, pBoard);
+void vDrawOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  vDrawWhiteOpenings(pRenderer, kpszFontPath, kiFontSize, pBoard);
+  vDrawBlackOpenings(pRenderer, kpszFontPath, kiFontSize, pBoard);
 }
 
-void vRenderer(SDL_Renderer *pRenderer, TTF_Font *pFont, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+void vDrawWhiteClock(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize) {
+  SDL_Rect stWhiteClockRect = { 520, 695, 100, 40 };
+  SDL_Color stBlackColor = { 0, 0, 0, 255 };
+  SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+  SDL_RenderFillRect(pRenderer, &stWhiteClockRect);
+  
+  vRenderText(
+    pRenderer,
+    "00:00",
+    540,
+    705,
+    stBlackColor,
+    kpszFontPath,
+    kiFontSize
+  );
+}
+
+void vDrawBlackClock(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize) {
+  SDL_Rect stBlacClockRect = { 520, 5, 100, 40 };
+  SDL_Color stBlackColor = { 0, 0, 0, 255 };
+  SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+  SDL_RenderFillRect(pRenderer, &stBlacClockRect);
+  
+  vRenderText(
+    pRenderer,
+    "00:00",
+    540,
+    15,
+    stBlackColor,
+    kpszFontPath,
+    kiFontSize
+  );
+}
+void vDrawClocks(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize) {
+  vDrawWhiteClock(pRenderer, kpszFontPath, kiFontSize);
+  vDrawBlackClock(pRenderer, kpszFontPath, kiFontSize);
+}
+
+void vRenderer(SDL_Renderer *pRenderer, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   if ( gbRenderer ) {
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
     SDL_RenderClear(pRenderer);
     
     vDrawHeaderRect(pRenderer);
-    vDrawBoard(pRenderer, pFont, pBoard);
+    vDrawBoard(pRenderer, FONT_PATH, FONT_SIZE, pBoard);
     vDrawFooterRect(pRenderer);
     
-    vDrawOpenings(pRenderer, pFont, pBoard);
+    vDrawOpenings(pRenderer, FONT_PATH, 18, pBoard);
+    vDrawClocks(pRenderer, FONT_PATH, 18);
     
     SDL_RenderPresent(pRenderer);
     gbRenderer = FALSE;
@@ -325,7 +379,6 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   int bRunning = TRUE;
   PSTRUCT_BOARD_HISTORY pstHistory = NULL;
   SDL_Event event;
-  TTF_Font *pFont = NULL;
   SDL_Window *pWindow = NULL;
   SDL_Renderer *pRenderer = NULL;
   STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT];
@@ -376,24 +429,16 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   );
   if ( !pWindow ) {
     vTraceError("Erro ao criar janela: %s\n", SDL_GetError());
-    vEndSDL(pFont, pRenderer, pWindow);
+    vEndSDL(pRenderer, pWindow);
     return -1;
   }
 
   pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
   if ( !pRenderer ) {
     vTraceError("Erro ao criar renderer: %s\n", SDL_GetError());
-    vEndSDL(pFont, pRenderer, pWindow);
+    vEndSDL(pRenderer, pWindow);
     return -1;
   }
-  
-  pFont = TTF_OpenFont(FONT_PATH, FONT_SIZE);
-  if ( !pFont ) {
-    vTraceError("Erro ao carregar fonte: %s\n", TTF_GetError());
-    vEndSDL(pFont, pRenderer, pWindow);
-    return -1;
-  }
-  gbTtfStarted = TRUE;
   
   vInitializeBoard(pBoard);
   pstHistory = pstCreateHistory();
@@ -407,10 +452,10 @@ int SDL_main(int iArgc, char *pszArgv[]) {
         vHandleMouseClickEvent(&event, pBoard);
       }
     }
-    vRenderer(pRenderer, pFont, pBoard);
+    vRenderer(pRenderer, pBoard);
   }
   
-  vEndSDL(pFont, pRenderer, pWindow);
+  vEndSDL(pRenderer, pWindow);
 
   vTraceEnd();
 

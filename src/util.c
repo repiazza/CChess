@@ -519,3 +519,14 @@ void vInvertStr(char *pszStr) {
   szAux[jj] = '\0';
   snprintf(pszStr, lStrSize+1, "%s", szAux);
 }
+
+int bOpenFont(TTF_Font **ppstFont, const char *kpszFontPath, const int kiFontSize) {
+  if ( (*ppstFont = TTF_OpenFont(kpszFontPath, kiFontSize)) == NULL )
+    return FALSE;
+  return TRUE;
+}
+
+void vCloseFont(TTF_Font **ppstFont) {
+  if ( *ppstFont )
+    TTF_CloseFont(*ppstFont);
+}

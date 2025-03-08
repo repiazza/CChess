@@ -22,6 +22,7 @@
   #include <consts.h>
   #include <cmdline.h>
   #include <trace.h>
+  #include <SDL2/SDL_ttf.h>
   #ifdef LINUX
     #include <sys/stat.h>
     #include <libgen.h>
@@ -154,7 +155,9 @@
   
   void vRemoveChar(char *pszStr, size_t lStrSize, char chCh);
   void vInvertStr(char *pszStr);
-
+  
+  int bOpenFont(TTF_Font **ppstFont, const char *kpszFontPath, const int kiFontSize);
+  void vCloseFont(TTF_Font **ppstFont);
 
   #endif /* _UTIL_H_ */
 
