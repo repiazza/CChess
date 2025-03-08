@@ -71,29 +71,27 @@ typedef struct STRUCT_MOVEMENT {
   uint16_t ui16MovementFlags;
 } STRUCT_MOVEMENT, *PSTRUCT_MOVEMENT;
 
+int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
 void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
-void vHighlightKnightMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
-void vHighlightBishopMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
-void vHighlightQueenMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
 void vHighlightKingMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
 void vHighlightPawnMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
-
-/* Declarações das funções */
-void vGetPieceMovementAttributes(const char *pszType, uint8_t ui8Side, int *piMaxRange, uint16_t *pui16Directions);
-int bPathIsClear(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
-int bValidateCastle(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetCol);
-int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
-
-/* Prototipação de funções */
-int iValidateMove(PSTRUCT_MOVEMENT pMovement);
-void vCalculateDirections(int iX, int iY, int *aiDirections);
-void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
-void vCalculateAvailableMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, int iMaxRange, uint16_t ui16Directions, uint8_t ui8Side);
 int bValidatePieceMovementAndRange(
     STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT],
     int iStartRow,
     int iStartCol,
     int iTargetRow,
     int iTargetCol);
+int bPathIsClear(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
+int bValidateCastle(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetCol);
+int bValidateEnPassant(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iStartRow, int iStartCol, int iTargetRow, int iTargetCol);
+void vHighlightQueenMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
+void vHighlightKnightMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
+void vHighlightBishopMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
+void vGetPieceMovementAttributes(const char *pszType, uint8_t ui8Side, int *piMaxRange, uint16_t *pui16Directions);
+// void vCalculateAvailableMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, int iMaxRange, uint16_t ui16Directions, uint8_t ui8Side);
+int iValidateMove(PSTRUCT_MOVEMENT pMovement);
+void vCalculateDirections(int iX, int iY, int *aiDirections);
+void vPrintDirections(const int *aiDirections);
+void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
 
 #endif /* MOVEMENT_H */

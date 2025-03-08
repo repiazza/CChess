@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int bValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
+int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
   /* Bloqueia se for peça do mesmo lado */
   if ( pBoard[iRow][iCol].ui8Side == ui8Side )
     return FALSE;
   if ( iRow < 0 && iRow >= ROW_SQUARE_COUNT && iCol < 0 && iCol >= COLUMN_SQUARE_COUNT )
     return FALSE;
   /* Permite captura se encontrar peça inimiga, mas interrompe o movimento */
-  return (pBoard[iRow][iCol].ui8Side != NEUTRAL_SIDE) ? FALSE : TRUE;
+  return (pBoard[iRow][iCol].ui8Side != NEUTRAL_SIDE) ? -1 : 1;
 }
 
 void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
@@ -25,31 +25,34 @@ void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
       ui8Side
     );
   }
-
+  
   for ( ii = iRow - 1; ii >= 0; ii-- ) { // Norte
-    if ( !bValidateSquareHighlight(pBoard, ii, iCol, ui8Side) )
-      break;
+    int iRsl = iValidateSquareHighlight(pBoard, ii, iCol, ui8Side);
+    if ( iRsl == 0 ) break;
     if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", ii, iCol);
     pBoard[ii][iCol].bHighlighted = TRUE;
+    if ( iRsl == -1 ) break;
   }
   for (  ii = iRow + 1; ii < ROW_SQUARE_COUNT; ii++ ) { // Sul
-    if (!bValidateSquareHighlight(pBoard, ii, iCol, ui8Side))
-      break;
+    int iRsl = iValidateSquareHighlight(pBoard, ii, iCol, ui8Side);
+    if ( iRsl == 0 ) break;
     if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", ii, iCol);
     pBoard[ii][iCol].bHighlighted = TRUE;
+    if ( iRsl == -1 ) break;
   }
   for (  jj = iCol - 1; jj >= 0; jj-- ) {// Oeste
-    if (!bValidateSquareHighlight(pBoard, iRow, jj, ui8Side))
-      break;
+    int iRsl = iValidateSquareHighlight(pBoard, iRow, jj, ui8Side);
+    if ( iRsl == 0 ) break;
     if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", iRow, jj);
     pBoard[iRow][jj].bHighlighted = TRUE;
+    if ( iRsl == -1 ) break;
   }
-  
   for ( jj = iCol + 1; jj < COLUMN_SQUARE_COUNT; jj++ ) { // Leste
-    if (!bValidateSquareHighlight(pBoard, iRow, jj, ui8Side))
-      break;
+    int iRsl = iValidateSquareHighlight(pBoard, iRow, jj, ui8Side);
+    if ( iRsl == 0 ) break;
     if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", iRow, jj);
     pBoard[iRow][jj].bHighlighted = TRUE;
+    if ( iRsl == -1 ) break;
   }
 }
 
@@ -60,7 +63,7 @@ void vHighlightKingMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
     int iNewRow = iRow + aiOffsets[ii][0];
     int iNewCol = iCol + aiOffsets[ii][1];
     // Evitar aliados
-    if ( bValidateSquareHighlight(pBoard, iNewRow, iNewCol, ui8Side) )
+    if ( iValidateSquareHighlight(pBoard, iNewRow, iNewCol, ui8Side) )
       pBoard[iNewRow][iNewCol].bHighlighted = TRUE;
   }
 }
@@ -75,7 +78,7 @@ void vHighlightPawnMoves(
   int iStartRow = (ui8Side == FRIENDLY_SIDE) ? 1 : 6;   // Linha inicial de movimento duplo
   int iOffset = 0;
   
-  vTraceVarArgs("Calculating pawn moves for (%d, %d), side: %d, direction: %d", iRow, iCol, ui8Side, iDirection);
+  // vTraceVarArgs("Calculating pawn moves for (%d, %d), side: %d, direction: %d", iRow, iCol, ui8Side, iDirection);
 
   // Movimento normal de 1 casa para frente
   if ( iRow + iDirection >= 0 && iRow + iDirection < ROW_SQUARE_COUNT ) {
@@ -272,7 +275,6 @@ void vHighlightKnightMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_
   }
 }
 
-
 void vHighlightBishopMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
   int aiDirections[4][2] = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}; // NW, NE, SW, SE
   int ii = 0;
@@ -332,7 +334,7 @@ void vGetPieceMovementAttributes(
     *pui16Directions = MOVEMENT_TYPE_NONE;
   }
 }
-
+#if 0
 // Função para calcular movimentos possíveis para uma peça
 void vCalculateAvailableMoves(
   STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT],
@@ -417,7 +419,7 @@ void vCalculateAvailableMoves(
     }
   }
 }
-
+#endif
 // Função para validar um movimento
 int iValidateMove(PSTRUCT_MOVEMENT pMovement) {
   if ( !pMovement ) {
@@ -504,8 +506,13 @@ void vPrintDirections(const int *aiDirections) {
   if (aiDirections[EAST])
     printf("Leste\n");
 }
+
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol) {
+  vTraceBegin();
+  vTraceBoardRowCol("FROM BOARD", pBoard, iFromRow, iFromCol);
+  vTraceBoardRowCol("TO BOARD", pBoard, iToRow, iToCol);
   pBoard[iToRow][iToCol] = pBoard[iFromRow][iFromCol];
   pBoard[iFromRow][iFromCol].pszType = SQUARE_TYPE_BLANK;
   pBoard[iFromRow][iFromCol].ui8Side = NEUTRAL_SIDE;
+  vTraceEnd();
 }

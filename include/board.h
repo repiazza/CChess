@@ -43,15 +43,16 @@ typedef struct STRUCT_SQUARE {
   uint8_t ui8Side;
   int bHighlighted;
   int bSelected;
-} STRUCT_SQUARE, *PSTRUCT_SQUARE;
+} STRUCT_SQUARE, *PSTRUCT_SQUARE, **PPSTRUCT_SQUARE;
 
-void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-/* Inicialização do tabuleiro */
+void vClearHighlights(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
+PSTRUCT_SQUARE pCreateSquare(const char *pszType, uint8_t ui8Color, uint8_t ui8Side);
+void vSetSquare(STRUCT_SQUARE *pSquare, char *pszType, uint8_t ui8Color, uint8_t ui8Side);
 void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-
-/* Funções auxiliares */
 void vPrintBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
 void vHighlightSquare(PSTRUCT_SQUARE pSquare,   int bHighlighted);
-void vClearHighlights(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
+void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
+void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
+void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 
 #endif /* BOARD_H */

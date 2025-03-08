@@ -5,7 +5,96 @@
 
 extern int gbRenderer;
 
+const char *gkpaszTurns[] = {
+  "FRIENDLY",
+  "ENEMY",
+  NULL
+};
+
 static int iCurrentTurn = FRIENDLY_SIDE; // Turno inicial: peças brancas
+
+void vSetSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  pBoard[iRow][iCol].bSelected = TRUE;
+}
+
+void vUnsetSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  pBoard[iRow][iCol].bSelected = FALSE;
+}
+
+void vToggleSquareSelection(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  if ( !pBoard[iRow][iCol].bSelected ) {
+    vSetSelected(pBoard, iRow, iCol);
+    return;
+  }
+  vUnsetSelected(pBoard, iRow, iCol);
+}
+
+bool bSquareSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  return pBoard[iRow][iCol].bSelected;
+}
+
+bool bHasAnySelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  int iRow = 0;
+  int iCol = 0;
+  for ( iRow = 0; iRow < ROW_SQUARE_COUNT; iRow++ ) {
+    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
+      if ( bSquareSelected(pBoard, iRow, iCol) ) return TRUE;
+    }
+  }
+  vTraceVarArgs("RETORNEMO FARSE");
+  return FALSE;
+}
+
+PSTRUCT_SQUARE pstGetBoardIfSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  int iRow = 0;
+  int iCol = 0;
+  for ( iRow = 0; iRow < ROW_SQUARE_COUNT; iRow++ ) {
+    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
+      if ( bSquareSelected(pBoard, iRow, iCol) ) {
+        vTraceVarArgs("iRow [%d] iCol [%d]", iRow, iCol);
+        return &pBoard[iRow][iCol];
+      }
+    }
+  }
+  return NULL;
+}
+
+int iGetRowFromBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], PSTRUCT_SQUARE pstBoard) {
+  int iRow = 0;
+  int iCol = 0;
+  for ( iRow = 0; iRow < ROW_SQUARE_COUNT; iRow++ ) {
+    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
+      if ( pstBoard == &pBoard[iRow][iCol] ) {
+        return iRow;
+      }
+    }
+  }
+  return -1;
+}
+
+int iGetColFromBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT],  PSTRUCT_SQUARE pstBoard) {
+  int iRow = 0;
+  int iCol = 0;
+  for ( iRow = 0; iRow < ROW_SQUARE_COUNT; iRow++ ) {
+    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
+      if ( pstBoard == &pBoard[iRow][iCol] ) {
+        return iCol;
+      }
+    }
+  }
+  return -1;
+}
+
+void vToggleTurn(int *piTurn) {
+  if ( piTurn == NULL ) return;
+  vTraceVarArgs("Turno encerrado [%s]", gkpaszTurns[*piTurn-1]);
+  switch ( *piTurn ) {
+    case FRIENDLY_SIDE: *piTurn = ENEMY_SIDE   ; break;
+    case ENEMY_SIDE   : *piTurn = FRIENDLY_SIDE; break;
+    default:                                     break;
+  }
+  vTraceVarArgs("Novo turno iniciado [%s]", gkpaszTurns[*piTurn-1]);
+}
 
 void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   static int iSelectedRow = -1;
@@ -14,6 +103,7 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   int iMouseY = 0;
   int iRow = 0;
   int iCol = 0;
+  PSTRUCT_SQUARE pstBoard = NULL;
   
   if ( pEvent->type != SDL_MOUSEBUTTONDOWN )
     return;
@@ -27,27 +117,52 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
 
   if (iRow < 0 || iRow >= ROW_SQUARE_COUNT || iCol < 0 || iCol >= COLUMN_SQUARE_COUNT)
     return;
-
-  if ( iSelectedRow == -1 || iSelectedCol == -1 ) {
-    if ( strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) != 0 && pBoard[iRow][iCol].ui8Side == iCurrentTurn ) {
-      iSelectedRow = iRow;
-      iSelectedCol = iCol;
+  vTraceMsg("pBoard[iRow][iCol].ui8Side [%d]", pBoard[iRow][iCol].ui8Side);
+  vTraceMsg("iCurrentTurn [%d]", iCurrentTurn);
+  
+  if ( !bHasAnySelected(pBoard) ) {
+    if ( pBoard[iRow][iCol].ui8Side == iCurrentTurn ) {
+      vTraceVarArgs("peca bate");
+      vClearHighlights(pBoard);
+      vToggleSquareSelection(pBoard, iRow, iCol);
       vHighlightPieceMoves(pBoard, iRow, iCol);
+    }
+    else {
+      vTraceVarArgs("peca nao bate");
     }
   }
   else {
+    pstBoard = pstGetBoardIfSelected(pBoard);
+    
+    if ( pstBoard ) {
+      iSelectedRow = iGetRowFromBoard(pBoard, pstBoard);
+      iSelectedCol = iGetColFromBoard(pBoard, pstBoard);
+    }
+    
+    //  Clicamos duas vezes na mesma?
+    if ( iSelectedRow == iRow && iSelectedCol == iCol ) {
+      if ( pstBoard->ui8Side == FRIENDLY_SIDE ) {
+        vClearHighlights(pBoard);
+        vToggleSquareSelection(pBoard, iRow, iCol);
+        return;
+      }
+    }
+    // nao, vamos andar ou comer?
     if ( pBoard[iRow][iCol].bHighlighted ) {
-      if ( strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) == 0 )
+      if ( strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) == 0 ) {
+        vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
         vMovePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
-      else if ( pBoard[iRow][iCol].ui8Side != iCurrentTurn )
+        vToggleTurn(&iCurrentTurn);
+      }
+      else if ( pBoard[iRow][iCol].ui8Side != iCurrentTurn ) {
+        vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
         vCapturePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
+        vToggleTurn(&iCurrentTurn);
+      }
 
       vClearHighlights(pBoard);
       iSelectedRow = -1;
       iSelectedCol = -1;
-
-      // Alterna o turno
-      iCurrentTurn = (iCurrentTurn == FRIENDLY_SIDE) ? ENEMY_SIDE : FRIENDLY_SIDE;
     }
     else {
       iSelectedRow = iRow;
@@ -59,20 +174,27 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
 }
 
 void vCapturePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iSrcRow, int iSrcCol, int iDestRow, int iDestCol) {
+  vTraceBegin();
   if ( DEBUG_MSGS ) vTraceVarArgs("Takes %s in position (%d, %d)\n", pBoard[iDestRow][iDestCol].pszType, iDestRow, iDestCol);
+  vTraceBoardRowCol("DEST BOARD", pBoard, iDestRow, iDestCol);
   
   // Liberar a memória da peça capturada
+  vTraceMsg("Liberar a memória da peça capturada");
   free(pBoard[iDestRow][iDestCol].pszType);
   pBoard[iDestRow][iDestCol].pszType = NULL;
 
   // Mover a peça atacante para a nova posição
+  vTraceMsg("Mover a peça atacante para a nova posição");
   pBoard[iDestRow][iDestCol].pszType = strdup(pBoard[iSrcRow][iSrcCol].pszType);
   pBoard[iDestRow][iDestCol].ui8Side = pBoard[iSrcRow][iSrcCol].ui8Side;
   pBoard[iDestRow][iDestCol].ui8Color = pBoard[iSrcRow][iSrcCol].ui8Color;
 
+  vTraceMsg("Marcar a posição antiga como vazia");
   // Marcar a posição antiga como vazia
   pBoard[iSrcRow][iSrcCol].pszType = strdup(SQUARE_TYPE_BLANK);
   pBoard[iSrcRow][iSrcCol].ui8Side = NEUTRAL_SIDE;
+  vTraceBoardRowCol("SRC BOARD DEPOIS", pBoard, iSrcRow, iSrcCol);
+  vTraceEnd();
 }
 
 void vHighlightPieceMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
@@ -95,6 +217,7 @@ void vHighlightPieceMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_C
   }
   else {
     if ( DEBUG_MSGS ) vTraceVarArgs("Piece has an invalid or blank side.");
+    return;
   }
 
   // Destacar movimentos baseados no tipo da peça

@@ -49,6 +49,7 @@ void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT
       pBoard[ii][jj].pszType = strdup(SQUARE_TYPE_BLANK);  /* Tipo inicial */
       pBoard[ii][jj].ui8Side = NEUTRAL_SIDE;               /* Lado inicial */
       pBoard[ii][jj].bHighlighted = FALSE;                 /* Sem destaque */
+      pBoard[ii][jj].bSelected = FALSE;
     }
   }
 
@@ -105,4 +106,71 @@ void vHighlightSquare(STRUCT_SQUARE *pSquare, int bHighlighted) {
   if ( pSquare ) {
     pSquare->bHighlighted = bHighlighted;
   }
+}
+
+void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  int iRow = 0;
+  int iCol = 0;
+  
+  if ( pszOutput == NULL || lOutputSize <= 0 ) return;
+  
+  snprintf(
+    &pszOutput[strlen(pszOutput)],
+    lOutputSize,
+    "\n"
+  );
+  
+  /* Inverte apenas o loop de desenho das linhas */
+  for ( iRow = ROW_SQUARE_COUNT - 1; iRow >= 0; iRow-- ) { /* Decrementa as linhas */
+    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
+      const char *pszPieceName = NULL;
+      
+      pszPieceName = pszGetPieceName(&pBoard[iRow][iCol]);
+      if ( pszPieceName && strlen(pszPieceName) > 0 ) {
+        snprintf(
+          &pszOutput[strlen(pszOutput)],
+          lOutputSize,
+          "%s",
+          pszPieceName
+        );
+      }
+      else {
+        snprintf(
+          &pszOutput[strlen(pszOutput)],
+          lOutputSize,
+          "_"
+        );
+      }
+    }
+    snprintf(
+      &pszOutput[strlen(pszOutput)],
+      lOutputSize,
+      "\n"
+    );
+  }
+}
+
+void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  char szDbg[256] = "";
+  memset(szDbg, 0x00, sizeof(szDbg));
+  vConvertBoard2String(szDbg, sizeof(szDbg), pBoard);
+  vTraceMsg(szDbg);
+}
+
+void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  vTraceVarArgs(
+    "\n=================%s================\n"
+    "TYPE.......: [%s]\n"
+    "COLOR......: [%d]\n"
+    "SIDE.......: [%d]\n"
+    "Highlighted: [%d]\n"
+    "SELECTED...: [%d]\n"
+    "===================================\n",
+    bStrIsEmpty(kpszMsg) ? "=" : kpszMsg,
+    pBoard[iRow][iCol].pszType,
+    pBoard[iRow][iCol].ui8Color,
+    pBoard[iRow][iCol].ui8Side,
+    pBoard[iRow][iCol].bHighlighted,
+    pBoard[iRow][iCol].bSelected
+  );
 }

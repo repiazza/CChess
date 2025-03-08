@@ -68,55 +68,6 @@ void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL
   vCloseFont(&pFont);
 }
 
-void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  int iRow = 0;
-  int iCol = 0;
-  
-  if ( pszOutput == NULL || lOutputSize <= 0 ) return;
-  
-  snprintf(
-    &pszOutput[strlen(pszOutput)],
-    lOutputSize,
-    "\n"
-  );
-  
-  /* Inverte apenas o loop de desenho das linhas */
-  for ( iRow = ROW_SQUARE_COUNT - 1; iRow >= 0; iRow-- ) { /* Decrementa as linhas */
-    for ( iCol = 0; iCol < COLUMN_SQUARE_COUNT; iCol++ ) {
-      const char *pszPieceName = NULL;
-      
-      pszPieceName = pszGetPieceName(&pBoard[iRow][iCol]);
-      if ( pszPieceName && strlen(pszPieceName) > 0 ) {
-        snprintf(
-          &pszOutput[strlen(pszOutput)],
-          lOutputSize,
-          "%s",
-          pszPieceName
-        );
-      }
-      else {
-        snprintf(
-          &pszOutput[strlen(pszOutput)],
-          lOutputSize,
-          "_"
-        );
-      }
-    }
-    snprintf(
-      &pszOutput[strlen(pszOutput)],
-      lOutputSize,
-      "\n"
-    );
-  }
-}
-
-void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  char szDbg[256] = "";
-  memset(szDbg, 0x00, sizeof(szDbg));
-  vConvertBoard2String(szDbg, sizeof(szDbg), pBoard);
-  vTraceMsg(szDbg);
-}
-
 /**
  * Renderiza o tabuleiro e as peças.
  */
