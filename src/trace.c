@@ -17,7 +17,7 @@ char gszConfFile[_MAX_PATH];
 
 int giNoNL = FALSE;
 
-void vSetDebugLevel( void ) {
+void vSetDebugLevel(void) {
   if( !bStrIsEmpty( gstCmdLine.szDebugLevel ) ) {
     gstTracePrm.iDebugLevel = atoi( gstCmdLine.szDebugLevel );
   }

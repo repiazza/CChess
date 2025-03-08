@@ -5,6 +5,7 @@
 #include <board.h>
 
 extern const char *gkpaszTurns[];
+extern int giCurrentTurn;
 
 void vSetSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 void vUnsetSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);

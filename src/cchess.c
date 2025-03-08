@@ -27,6 +27,13 @@ int gbRenderer = TRUE;
 char *gpszCurrentWhiteOpegning = NULL;
 char *gpszCurrentBlackOpegning = NULL;
 
+// Tempo em segundos
+int giWhiteClock = 600;
+int giBlackClock = 600;
+SDL_mutex *gstClockMutex;
+
+int gbRunning = TRUE;
+
 /**
  * Renderiza texto na tela.
  */
@@ -126,7 +133,11 @@ int bInitSDL(Uint32 ui32SdlFlag) {
   return TRUE;
 }
 
-void vEndSDL(SDL_Renderer *pRenderer, SDL_Window *pWindow) {
+void vEndSDL(SDL_Thread *pstThread, SDL_Renderer *pRenderer, SDL_Window *pWindow) {
+  if ( pstThread ) {
+    SDL_WaitThread(pstThread, NULL);
+    SDL_DestroyMutex(gstClockMutex);
+  }
   if ( pRenderer )
     SDL_DestroyRenderer(pRenderer);
   if ( pWindow )
@@ -240,15 +251,48 @@ void vDrawOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const int 
   vDrawBlackOpenings(pRenderer, kpszFontPath, kiFontSize, pBoard);
 }
 
+int iClockThread(void *vpArg) {
+  UNUSED(vpArg);
+  while ( gbRunning ) {
+    sleep(1);
+    
+    SDL_LockMutex(gstClockMutex);
+    
+    if ( giCurrentTurn == FRIENDLY_SIDE ) {
+      if ( giWhiteClock > 0 ) giWhiteClock--;
+    }
+    else {
+      if ( giBlackClock > 0 ) giBlackClock--;
+    }
+    
+    SDL_UnlockMutex(gstClockMutex);
+  }
+  return 0;
+}
+
 void vDrawWhiteClock(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize) {
   SDL_Rect stWhiteClockRect = { 520, 695, 100, 40 };
   SDL_Color stBlackColor = { 0, 0, 0, 255 };
+  int iMinutes = giWhiteClock / 60;
+  int iSeconds = giWhiteClock % 60;
+  char szTime[32] = "";
+  
+  memset(szTime, 0x00, sizeof(szTime));
+  
   SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
   SDL_RenderFillRect(pRenderer, &stWhiteClockRect);
   
+  snprintf(
+    szTime,
+    sizeof(szTime),
+    "%02d:%02d",
+    iMinutes,
+    iSeconds
+  );
+  
   vRenderText(
     pRenderer,
-    "00:00",
+    szTime,
     540,
     705,
     stBlackColor,
@@ -260,12 +304,26 @@ void vDrawWhiteClock(SDL_Renderer *pRenderer, const char *kpszFontPath, const in
 void vDrawBlackClock(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize) {
   SDL_Rect stBlacClockRect = { 520, 5, 100, 40 };
   SDL_Color stBlackColor = { 0, 0, 0, 255 };
+  int iMinutes = giBlackClock / 60;
+  int iSeconds = giBlackClock % 60;
+  char szTime[32] = "";
+  
+  memset(szTime, 0x00, sizeof(szTime));
+  
   SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
   SDL_RenderFillRect(pRenderer, &stBlacClockRect);
   
+  snprintf(
+    szTime,
+    sizeof(szTime),
+    "%02d:%02d",
+    iMinutes,
+    iSeconds
+  );
+  
   vRenderText(
     pRenderer,
-    "00:00",
+    szTime,
     540,
     15,
     stBlackColor,
@@ -273,13 +331,14 @@ void vDrawBlackClock(SDL_Renderer *pRenderer, const char *kpszFontPath, const in
     kiFontSize
   );
 }
+
 void vDrawClocks(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize) {
   vDrawWhiteClock(pRenderer, kpszFontPath, kiFontSize);
   vDrawBlackClock(pRenderer, kpszFontPath, kiFontSize);
 }
 
 void vRenderer(SDL_Renderer *pRenderer, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  if ( gbRenderer ) {
+  if ( gbRenderer || atoi(gstCmdLine.szClock) ) {
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
     SDL_RenderClear(pRenderer);
     
@@ -288,7 +347,7 @@ void vRenderer(SDL_Renderer *pRenderer, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][C
     vDrawFooterRect(pRenderer);
     
     vDrawOpenings(pRenderer, FONT_PATH, 18, pBoard);
-    vDrawClocks(pRenderer, FONT_PATH, 18);
+    if ( atoi(gstCmdLine.szClock) ) vDrawClocks(pRenderer, FONT_PATH, 18);
     
     SDL_RenderPresent(pRenderer);
     gbRenderer = FALSE;
@@ -327,12 +386,12 @@ int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
 #else
 int SDL_main(int iArgc, char *pszArgv[]) {
 #endif
-  int bRunning = TRUE;
   PSTRUCT_BOARD_HISTORY pstHistory = NULL;
   SDL_Event event;
   SDL_Window *pWindow = NULL;
   SDL_Renderer *pRenderer = NULL;
   STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT];
+  SDL_Thread *pstThread = NULL;
   
   UNUSED(pstHistory);
   
@@ -380,24 +439,32 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   );
   if ( !pWindow ) {
     vTraceError("Erro ao criar janela: %s\n", SDL_GetError());
-    vEndSDL(pRenderer, pWindow);
+    vEndSDL(pstThread, pRenderer, pWindow);
     return -1;
   }
 
   pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
   if ( !pRenderer ) {
     vTraceError("Erro ao criar renderer: %s\n", SDL_GetError());
-    vEndSDL(pRenderer, pWindow);
+    vEndSDL(pstThread, pRenderer, pWindow);
     return -1;
   }
   
   vInitializeBoard(pBoard);
   pstHistory = pstCreateHistory();
   
-  while ( bRunning ) {
+  pstThread = SDL_CreateThread(iClockThread, "ClockThread", NULL);
+  if ( !pstThread ) {
+    vTraceError("Erro ao criar thread: %s\n", SDL_GetError());
+    vEndSDL(pstThread, pRenderer, pWindow);
+    return -1;
+  }
+  
+  // main loop
+  while ( gbRunning ) {
     while ( SDL_PollEvent(&event) ) {
       if ( event.type == SDL_QUIT ) {
-        bRunning = FALSE;
+        gbRunning = FALSE;
       }
       else if ( event.type == SDL_MOUSEBUTTONDOWN ) {
         vHandleMouseClickEvent(&event, pBoard);
@@ -406,7 +473,7 @@ int SDL_main(int iArgc, char *pszArgv[]) {
     vRenderer(pRenderer, pBoard);
   }
   
-  vEndSDL(pRenderer, pWindow);
+  vEndSDL(pstThread, pRenderer, pWindow);
 
   vTraceEnd();
 

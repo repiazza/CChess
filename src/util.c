@@ -14,6 +14,7 @@ char *szTokenName[] = {
   "TRACE_FILE",
   "DEBUG_LEVEL",
   "WINDOW_RESOLUTION",
+  "CLOCK",
   NULL
 };
 
@@ -218,18 +219,26 @@ int iParseCfgLine( char *pszLineContents ) {
   if ( bStrIsEmpty( pCh ) ) return 0;
   
   switch ( ( iTokenRsl = iValidToken( pCh ) ) ) {
-    case TRACE_FILE       : 
-        memset( gstCmdLine.szTraceFile, 0x00, sizeof( gstCmdLine.szTraceFile ));
-        pDestVar = gstCmdLine.szTraceFile ;
-        break;
-    case DEBUG_LEVEL      : 
-        memset( gstCmdLine.szDebugLevel, 0x00, sizeof( gstCmdLine.szDebugLevel ));
-        pDestVar = gstCmdLine.szDebugLevel; 
-        break;
-    case WINDOW_RESOLUTION: 
-        memset( gstCmdLine.szWinWidth, 0x00, sizeof( gstCmdLine.szWinWidth ));
-        memset( gstCmdLine.szWinHeight, 0x00, sizeof( gstCmdLine.szWinHeight ));
-        break;
+    case TRACE_FILE       : {
+      memset( gstCmdLine.szTraceFile, 0x00, sizeof( gstCmdLine.szTraceFile ));
+      pDestVar = gstCmdLine.szTraceFile ;
+      break;
+    }
+    case DEBUG_LEVEL      : {
+      memset( gstCmdLine.szDebugLevel, 0x00, sizeof( gstCmdLine.szDebugLevel ));
+      pDestVar = gstCmdLine.szDebugLevel; 
+      break;
+    }
+    case WINDOW_RESOLUTION: {
+      memset( gstCmdLine.szWinWidth, 0x00, sizeof( gstCmdLine.szWinWidth ));
+      memset( gstCmdLine.szWinHeight, 0x00, sizeof( gstCmdLine.szWinHeight ));
+      break;
+    }
+    case CLOCK: {
+      memset(gstCmdLine.szClock, 0x00, sizeof(gstCmdLine.szClock));
+      pDestVar = gstCmdLine.szClock;
+      break;
+    }
     default               : return 0;
   } /* switch */
   

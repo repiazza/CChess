@@ -52,13 +52,13 @@
    * Structure that represnts
    * command line arguments
    */
-  typedef struct STRUCT_COMMAND_LINE
-  {
+  typedef struct STRUCT_COMMAND_LINE {
     char szTraceFile [_MAX_PATH];
     char szDebugLevel[_MAX_PATH];
     char szConfFile  [_MAX_PATH];
     char szWinHeight [_MAX_PATH];
     char szWinWidth  [_MAX_PATH];
+    char szClock     [8];
   } STRUCT_COMMAND_LINE;
 
 

@@ -11,7 +11,7 @@ const char *gkpaszTurns[] = {
   NULL
 };
 
-static int iCurrentTurn = FRIENDLY_SIDE; // Turno inicial: peças brancas
+int giCurrentTurn = FRIENDLY_SIDE; // Turno inicial: peças brancas
 
 void vSetSelected(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
   pBoard[iRow][iCol].bSelected = TRUE;
@@ -118,10 +118,10 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   if (iRow < 0 || iRow >= ROW_SQUARE_COUNT || iCol < 0 || iCol >= COLUMN_SQUARE_COUNT)
     return;
   vTraceMsg("pBoard[iRow][iCol].ui8Side [%d]", pBoard[iRow][iCol].ui8Side);
-  vTraceMsg("iCurrentTurn [%d]", iCurrentTurn);
+  vTraceMsg("giCurrentTurn [%d]", giCurrentTurn);
   
   if ( !bHasAnySelected(pBoard) ) {
-    if ( pBoard[iRow][iCol].ui8Side == iCurrentTurn ) {
+    if ( pBoard[iRow][iCol].ui8Side == giCurrentTurn ) {
       vTraceVarArgs("peca bate");
       vClearHighlights(pBoard);
       vToggleSquareSelection(pBoard, iRow, iCol);
@@ -152,12 +152,12 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
       if ( strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) == 0 ) {
         vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
         vMovePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
-        vToggleTurn(&iCurrentTurn);
+        vToggleTurn(&giCurrentTurn);
       }
-      else if ( pBoard[iRow][iCol].ui8Side != iCurrentTurn ) {
+      else if ( pBoard[iRow][iCol].ui8Side != giCurrentTurn ) {
         vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
         vCapturePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
-        vToggleTurn(&iCurrentTurn);
+        vToggleTurn(&giCurrentTurn);
       }
 
       vClearHighlights(pBoard);

@@ -53,6 +53,11 @@ STRUCT_CMDLINE astCmdOpt[] = {
      FALSE,         "0",                  gstCmdLine.szWinWidth,     sizeof(gstCmdLine.szWinWidth),
     "<number> is the Window Width"
   },
+/* 06 */
+  { "clock",       "c",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
+     FALSE,         "1",                  gstCmdLine.szClock,        sizeof(gstCmdLine.szClock),
+    "<number> define if play with clock (default is 1)"
+  },
   /* NOTE: NULL indicates the end of the array, NEVER REMOVE IT! */
   { NULL,         NULL,                   CMDDATA_NULL,             CMDTYPE_NULL,                    "",
      FALSE,        "",                     NULL,                     0,
