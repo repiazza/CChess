@@ -1,5 +1,5 @@
 # CChess
 Xadrez escrito em C
 
-[!CChess](img/CChess.png)
+![CChess](img/CChess.png)
  
