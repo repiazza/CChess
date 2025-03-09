@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 #include <trace.h>
 #include <colors.h>
 #include <cmdline.h>
@@ -17,6 +18,60 @@
 /* Inicializações de fontes */
 #define FONT_PATH "./fonts/FiraCode.ttf" /* Substitua pelo caminho correto */
 #define FONT_SIZE 24
+
+typedef enum ENUM_PIECE_IMAGE_INDEX {
+  PAWN_PIECE_INDEX,
+  ROOK_PIECE_INDEX,
+  KNIGHT_PIECE_INDEX,
+  BISHOP_PIECE_INDEX,
+  QUEEN_PIECE_INDEX,
+  KING_PIECE_INDEX,
+  NULL_PIECE_INDEX
+} ENUM_PIECE_IMAGE_INDEX, *PENUM_PIECE_IMAGE_INDEX;
+
+#ifdef LINUX
+const char *gkpaszWhitePiecesImagePath[] = {
+  "img/w_pawn_1x.png",
+  "img/w_rook_1x.png",
+  "img/w_knight_1x.png",
+  "img/w_bishop_1x.png",
+  "img/w_queen_1x.png",
+  "img/w_king_1x.png",
+  NULL
+};
+
+const char *gkpaszBlackPiecesImagePath[] = {
+  "img/b_pawn_1x.png",
+  "img/b_rook_1x.png",
+  "img/b_knight_1x.png",
+  "img/b_bishop_1x.png",
+  "img/b_queen_1x.png",
+  "img/b_king_1x.png",
+  NULL
+};
+#endif
+
+#ifdef _WIN32
+const char *gkpaszWhitePiecesImagePath[] = {
+  "img\\w_pawn_1x.png",
+  "img\\w_rook_1x.png",
+  "img\\w_knight_1x.png",
+  "img\\w_bishop_1x.png",
+  "img\\w_queen_1x.png",
+  "img\\w_king_1x.png",
+  NULL
+};
+
+const char *gkpaszBlackPiecesImagePath[] = {
+  "img\\b_pawn_1x.png",
+  "img\\b_rook_1x.png",
+  "img\\b_knight_1x.png",
+  "img\\b_bishop_1x.png",
+  "img\\b_queen_1x.png",
+  "img\\b_king_1x.png",
+  NULL
+};
+#endif
 
 /* Nome do programa */
 const char *gkpszProgramName;
@@ -68,11 +123,94 @@ void vRenderText(SDL_Renderer *pRenderer, const char *pszText, int x, int y, SDL
 
   iRECT_SetDimensions(&rect, (SDL_Rect){x, y, pSurface->w, pSurface->h});
   SDL_RenderCopy(pRenderer, pTexture, NULL, &rect);
-
+  
   SDL_FreeSurface(pSurface);
   SDL_DestroyTexture(pTexture);
   
   vCloseFont(&pFont);
+}
+
+void vRenderImage(SDL_Renderer *pRenderer, const char *kpszImagePath, SDL_Rect stRect) {
+  SDL_Texture *pstTexture = NULL;
+  SDL_Surface *pstSurface = NULL;
+  int iTextureWidth = 0;
+  int iTextureHeight = 0;
+  
+  pstSurface = IMG_Load(kpszImagePath);
+  if ( !pstSurface ) {
+    vTraceError("Erro ao carregar a imagem [%s]: %s", kpszImagePath, IMG_GetError());
+    return;
+  }
+  pstTexture = SDL_CreateTextureFromSurface(pRenderer, pstSurface);
+  SDL_FreeSurface(pstSurface);
+  if ( !pstTexture ) {
+    vTraceError("Erro ao criar textura para a imagem [%s]: %s", kpszImagePath, IMG_GetError());
+    SDL_DestroyTexture(pstTexture);
+    return;
+  }
+  SDL_QueryTexture(pstTexture, NULL, NULL, &iTextureWidth, &iTextureHeight);
+  SDL_RenderCopy(pRenderer, pstTexture, NULL, &stRect);
+  SDL_DestroyTexture(pstTexture);
+}
+
+ENUM_PIECE_IMAGE_INDEX eGetPieceIndexFromPieceName(const char *kpszPieceName) {
+  ENUM_PIECE_IMAGE_INDEX ePieceIndex = NULL_PIECE_INDEX;
+  if ( strcmp(kpszPieceName, SQUARE_TYPE_PAWN_PIECE) == 0 )
+    ePieceIndex = PAWN_PIECE_INDEX;
+  if ( strcmp(kpszPieceName, SQUARE_TYPE_ROOK_PIECE) == 0 )
+    ePieceIndex = ROOK_PIECE_INDEX;
+  if ( strcmp(kpszPieceName, SQUARE_TYPE_KNIGHT_PIECE) == 0 )
+    ePieceIndex = KNIGHT_PIECE_INDEX;
+  if ( strcmp(kpszPieceName, SQUARE_TYPE_BISHOP_PIECE) == 0 )
+    ePieceIndex = BISHOP_PIECE_INDEX;
+  if ( strcmp(kpszPieceName, SQUARE_TYPE_QUEEN_PIECE) == 0 )
+    ePieceIndex = QUEEN_PIECE_INDEX;
+  if ( strcmp(kpszPieceName, SQUARE_TYPE_KING_PIECE) == 0 )
+    ePieceIndex = KING_PIECE_INDEX;
+  return ePieceIndex;
+}
+
+void vDrawPieces(SDL_Renderer *pRenderer, PSTRUCT_SQUARE pstBoard, const char *pszPieceName, int iRow, int iCol, const char *kpszFontPath, const int kiFontSize) {
+  SDL_Color SDL_COLOR_PieceText = (pstBoard->ui8Side == FRIENDLY_SIDE)
+                                      ? (SDL_Color){255, 255, 255, 255}
+                                      : (SDL_Color){0, 0, 0, 255};
+  SDL_Rect stRect;
+  // Text x y
+  int iX = (iCol * SQUARE_SIZE + SQUARE_SIZE / 4);
+  int iY = ((ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4)+50;
+  ENUM_PIECE_IMAGE_INDEX ePieceIndex = NULL_PIECE_INDEX;
+  
+  vRenderText(
+    pRenderer,
+    pszPieceName,
+    iX,
+    iY,
+    SDL_COLOR_PieceText,
+    kpszFontPath,
+    kiFontSize
+  );
+  
+  // Image x y
+  iX = (iCol * SQUARE_SIZE + SQUARE_SIZE / 4)-20;
+  iY = ((ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4)+30;
+  iRECT_SetDimensions(&stRect, (SDL_Rect){iX, iY, SQUARE_SIZE, SQUARE_SIZE});
+  
+  if ( (ePieceIndex = eGetPieceIndexFromPieceName(pstBoard->pszType)) != NULL_PIECE_INDEX ) {
+    if ( pstBoard->ui8Side == FRIENDLY_SIDE ) {
+      vRenderImage(
+        pRenderer,
+        gkpaszWhitePiecesImagePath[ePieceIndex],
+        stRect
+      );
+    }
+    else {
+      vRenderImage(
+        pRenderer,
+        gkpaszBlackPiecesImagePath[ePieceIndex],
+        stRect
+      );
+    }
+  }
 }
 
 /**
@@ -106,18 +244,7 @@ void vDrawBoard(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiF
       /* Desenhar peça */
       pszPieceName = pszGetPieceName(&pBoard[iRow][iCol]);
       if ( pszPieceName && strlen(pszPieceName) > 0 ) {
-        SDL_Color SDL_COLOR_PieceText = (pBoard[iRow][iCol].ui8Side == FRIENDLY_SIDE)
-                                            ? (SDL_Color){255, 255, 255, 255}
-                                            : (SDL_Color){0, 0, 0, 255};
-        vRenderText(
-          pRenderer,
-          pszPieceName,
-          (iCol * SQUARE_SIZE + SQUARE_SIZE / 4),
-          ((ROW_SQUARE_COUNT - 1 - iRow) * SQUARE_SIZE + SQUARE_SIZE / 4)+50,
-          SDL_COLOR_PieceText,
-          kpszFontPath,
-          kiFontSize
-        );
+        vDrawPieces(pRenderer, &pBoard[iRow][iCol], pszPieceName, iRow, iCol, kpszFontPath, kiFontSize);
       }
     }
   }
@@ -130,6 +257,12 @@ int bInitSDL(Uint32 ui32SdlFlag) {
     vTraceError("Erro ao inicializar SDL ou TTF: %s", SDL_GetError());
     return FALSE;
   }
+  
+  if ( !IMG_Init(IMG_INIT_PNG) ) {
+    printf("Erro ao inicializar SDL_image: %s\n", IMG_GetError());
+    return FALSE;
+  }
+  
   return TRUE;
 }
 
@@ -142,6 +275,7 @@ void vEndSDL(SDL_Thread *pstThread, SDL_Renderer *pRenderer, SDL_Window *pWindow
     SDL_DestroyRenderer(pRenderer);
   if ( pWindow )
     SDL_DestroyWindow(pWindow);
+  IMG_Quit();
   TTF_Quit();
   SDL_Quit();
 }
