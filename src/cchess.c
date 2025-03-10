@@ -337,7 +337,6 @@ void vDrawWhiteOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const
     kpszFontPath,
     kiFontSize
   );
-  
 }
 
 void vDrawBlackOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const int kiFontSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
@@ -388,7 +387,7 @@ void vDrawOpenings(SDL_Renderer *pRenderer, const char *kpszFontPath, const int 
 int iClockThread(void *vpArg) {
   UNUSED(vpArg);
   while ( gbRunning ) {
-    sleep(1);
+    SDL_Delay(1000);
     
     SDL_LockMutex(gstClockMutex);
     
