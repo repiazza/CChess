@@ -36,6 +36,11 @@
 #define SQUARE_TYPE_ROOK_PIECE       "ROOKPIECE"
 #define SQUARE_TYPE_BLANK            "BLANK"
 
+#define SQUARE_THREAT_NONE     0x00
+#define SQUARE_THREAT_FRIENDLY 0x01
+#define SQUARE_THREAT_ENEMY    0x02
+#define SQUARE_THREAT_BOTH (SQUARE_THREAT_FRIENDLY | SQUARE_THREAT_ENEMY)
+
 /* Estruturas para o tabuleiro */
 typedef struct STRUCT_SQUARE {
   char *pszType;  /* Adicionado const para strings constantes */
@@ -43,16 +48,19 @@ typedef struct STRUCT_SQUARE {
   uint8_t ui8Side;
   int bHighlighted;
   int bSelected;
+  int bHasMoved;
+  uint8_t ui8Threat;
 } STRUCT_SQUARE, *PSTRUCT_SQUARE, **PPSTRUCT_SQUARE;
+
+extern const char *gkpszThreatType[];
 
 void vClearHighlights(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
 PSTRUCT_SQUARE pCreateSquare(const char *pszType, uint8_t ui8Color, uint8_t ui8Side);
 void vSetSquare(STRUCT_SQUARE *pSquare, char *pszType, uint8_t ui8Color, uint8_t ui8Side);
 void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
 void vPrintBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-void vHighlightSquare(PSTRUCT_SQUARE pSquare,   int bHighlighted);
+// void vHighlightSquare(PSTRUCT_SQUARE pSquare,   int bHighlighted);
+void vHighlightSquare(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
-void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 
 #endif /* BOARD_H */

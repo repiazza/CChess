@@ -14,6 +14,32 @@ int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUAR
   return (pBoard[iRow][iCol].ui8Side != NEUTRAL_SIDE) ? -1 : 1;
 }
 
+void vHighlightSquare(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted square (%d, %d)", iRow, iCol);
+  pBoard[iRow][iCol].bHighlighted = TRUE;
+}
+
+void vSetSquareThreat(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
+  int iThreatType = pBoard[iRow][iCol].ui8Threat;
+  switch ( ui8Side ) {
+    case NEUTRAL_SIDE: {
+      iThreatType = SQUARE_THREAT_NONE;
+      break;
+    }
+    case FRIENDLY_SIDE: {
+      iThreatType |= SQUARE_THREAT_FRIENDLY;
+      break;
+    }
+    case ENEMY_SIDE: {
+      iThreatType |= SQUARE_THREAT_ENEMY;
+      break;
+    }
+    default: break;
+  }
+  pBoard[iRow][iCol].ui8Threat = iThreatType;
+  vTraceSquare(NULL, pBoard, iRow, iCol);
+}
+
 void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
   int ii = 0;
   int jj = 0;
@@ -29,29 +55,29 @@ void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
   for ( ii = iRow - 1; ii >= 0; ii-- ) { // Norte
     int iRsl = iValidateSquareHighlight(pBoard, ii, iCol, ui8Side);
     if ( iRsl == 0 ) break;
-    if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", ii, iCol);
-    pBoard[ii][iCol].bHighlighted = TRUE;
+    vHighlightSquare(pBoard, ii, iCol);
+    vSetSquareThreat(pBoard, ii, iCol, ui8Side);
     if ( iRsl == -1 ) break;
   }
   for (  ii = iRow + 1; ii < ROW_SQUARE_COUNT; ii++ ) { // Sul
     int iRsl = iValidateSquareHighlight(pBoard, ii, iCol, ui8Side);
     if ( iRsl == 0 ) break;
-    if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", ii, iCol);
-    pBoard[ii][iCol].bHighlighted = TRUE;
+    vHighlightSquare(pBoard, ii, iCol);
+    vSetSquareThreat(pBoard, ii, iCol, ui8Side);
     if ( iRsl == -1 ) break;
   }
   for (  jj = iCol - 1; jj >= 0; jj-- ) {// Oeste
     int iRsl = iValidateSquareHighlight(pBoard, iRow, jj, ui8Side);
     if ( iRsl == 0 ) break;
-    if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", iRow, jj);
-    pBoard[iRow][jj].bHighlighted = TRUE;
+    vHighlightSquare(pBoard, iRow, jj);
+    vSetSquareThreat(pBoard, iRow, jj, ui8Side);
     if ( iRsl == -1 ) break;
   }
   for ( jj = iCol + 1; jj < COLUMN_SQUARE_COUNT; jj++ ) { // Leste
     int iRsl = iValidateSquareHighlight(pBoard, iRow, jj, ui8Side);
     if ( iRsl == 0 ) break;
-    if ( DEBUG_MSGS ) vTraceVarArgs("Highlighted move to (%d, %d)", iRow, jj);
-    pBoard[iRow][jj].bHighlighted = TRUE;
+    vHighlightSquare(pBoard, iRow, jj);
+    vSetSquareThreat(pBoard, iRow, jj, ui8Side);
     if ( iRsl == -1 ) break;
   }
 }
@@ -63,8 +89,10 @@ void vHighlightKingMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_CO
     int iNewRow = iRow + aiOffsets[ii][0];
     int iNewCol = iCol + aiOffsets[ii][1];
     // Evitar aliados
-    if ( iValidateSquareHighlight(pBoard, iNewRow, iNewCol, ui8Side) )
-      pBoard[iNewRow][iNewCol].bHighlighted = TRUE;
+    if ( iValidateSquareHighlight(pBoard, iNewRow, iNewCol, ui8Side) ) {
+      vHighlightSquare(pBoard, iNewRow, iNewCol);
+      vSetSquareThreat(pBoard, iNewRow, iNewCol, ui8Side);
+    }
   }
 }
 
@@ -78,23 +106,15 @@ void vHighlightPawnMoves(
   int iStartRow = (ui8Side == FRIENDLY_SIDE) ? 1 : 6;   // Linha inicial de movimento duplo
   int iOffset = 0;
   
-  // vTraceVarArgs("Calculating pawn moves for (%d, %d), side: %d, direction: %d", iRow, iCol, ui8Side, iDirection);
-
   // Movimento normal de 1 casa para frente
   if ( iRow + iDirection >= 0 && iRow + iDirection < ROW_SQUARE_COUNT ) {
-    vTraceVarArgs("Checking single move to (%d, %d)", iRow + iDirection, iCol);
-
     if ( pBoard[iRow + iDirection][iCol].ui8Side == NEUTRAL_SIDE) {
       pBoard[iRow + iDirection][iCol].bHighlighted = TRUE;
-      vTraceVarArgs("Highlighted single move to (%d, %d)", iRow + iDirection, iCol);
-
       // Movimento inicial de 2 casas para frente
       if (iRow == iStartRow && pBoard[iRow + 2 * iDirection][iCol].ui8Side == NEUTRAL_SIDE) {
-        pBoard[iRow + 2 * iDirection][iCol].bHighlighted = TRUE;
-        vTraceVarArgs("Highlighted double move to (%d, %d)", iRow + 2 * iDirection, iCol);
+        vHighlightSquare(pBoard, iRow + 2 * iDirection, iCol);
+        vSetSquareThreat(pBoard, iRow + 2 * iDirection, iCol, ui8Side);
       }
-    } else {
-      vTraceVarArgs("Single move blocked at (%d, %d)", iRow + iDirection, iCol);
     }
   }
 
@@ -103,15 +123,11 @@ void vHighlightPawnMoves(
     int iNewCol = iCol + iOffset;
     if (iNewCol >= 0 && iNewCol < COLUMN_SQUARE_COUNT &&
       iRow + iDirection >= 0 && iRow + iDirection < ROW_SQUARE_COUNT) {
-      vTraceVarArgs("Checking diagonal capture at (%d, %d)", iRow + iDirection, iNewCol);
-
       if ( pBoard[iRow + iDirection][iNewCol].ui8Side != NEUTRAL_SIDE &&
             pBoard[iRow + iDirection][iNewCol].ui8Side != ui8Side) {
         pBoard[iRow + iDirection][iNewCol].bHighlighted = TRUE;
-        vTraceVarArgs("Highlighted diagonal capture at (%d, %d)", iRow + iDirection, iNewCol);
-      }
-      else {
-        vTraceVarArgs("No capture possible at (%d, %d)", iRow + iDirection, iNewCol);
+        vHighlightSquare(pBoard, iRow + iDirection, iNewCol);
+        vSetSquareThreat(pBoard, iRow + iDirection, iNewCol, ui8Side);
       }
     }
   }
@@ -154,7 +170,7 @@ int bValidatePieceMovementAndRange(
   // Movimentos especiais
   if ( ui16MovementType & SPECIAL_MOVEMENT_ALL ) {
     if ( ui16MovementType & SPECIAL_MOVEMENT_CASTLE )
-      if (bValidateCastle(pBoard, iStartRow, iStartCol, iTargetCol))
+      if ( bValidateCastle(pBoard, iStartRow, iStartCol, iTargetCol) )
         return TRUE; // Roque válido
     if ( ui16MovementType & SPECIAL_MOVEMENT_EN_PASSANT )
       if ( bValidateEnPassant(pBoard, iStartRow, iStartCol, iTargetRow, iTargetCol) )
@@ -167,18 +183,18 @@ int bValidatePieceMovementAndRange(
       return bPathIsClear(pBoard, iStartRow, iStartCol, iTargetRow, iTargetCol);
 
   /* Movimentos verticais */
-  if (ui16MovementType & MOVEMENT_DIRECTION_COLUMN)
+  if ( ui16MovementType & MOVEMENT_DIRECTION_COLUMN )
     if (iColDiff == 0 && abs(iRowDiff) <= iMovementRange)
       return bPathIsClear(pBoard, iStartRow, iStartCol, iTargetRow, iTargetCol);
 
   /* Movimentos horizontais */
-  if (ui16MovementType & MOVEMENT_DIRECTION_LINE)
+  if ( ui16MovementType & MOVEMENT_DIRECTION_LINE )
     if (iRowDiff == 0 && abs(iColDiff) <= iMovementRange)
       return bPathIsClear(pBoard, iStartRow, iStartCol, iTargetRow, iTargetCol);
 
   /* Movimentos em L (cavalo) */
-  if (ui16MovementType & MOVEMENT_DIRECTION_L)
-    if ((abs(iRowDiff) == 2 && abs(iColDiff) == 1) || (abs(iRowDiff) == 1 && abs(iColDiff) == 2))
+  if ( ui16MovementType & MOVEMENT_DIRECTION_L )
+    if ( (abs(iRowDiff) == 2 && abs(iColDiff) == 1) || (abs(iRowDiff) == 1 && abs(iColDiff) == 2) )
       return TRUE;
 
   /* Se nenhum movimento foi válido, retorna falso */
@@ -259,17 +275,14 @@ void vHighlightKnightMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_
   snprintf(szLogMsg, sizeof(szLogMsg), "Calculating knight moves for (%d, %d)", iRow, iCol);
   vTraceMsg(szLogMsg);
 
-  for ( ii = 0; ii < 8; ii++) {
+  for ( ii = 0; ii < 8; ii++ ) {
     int iNewRow = iRow + aiOffsets[ii][0];
     int iNewCol = iCol + aiOffsets[ii][1];
-
-    if (iNewRow >= 0 && iNewRow < ROW_SQUARE_COUNT && iNewCol >= 0 && iNewCol < COLUMN_SQUARE_COUNT)
-    {
-      if (pBoard[iNewRow][iNewCol].ui8Side != pBoard[iRow][iCol].ui8Side) // Evitar aliados
-      {
-          pBoard[iNewRow][iNewCol].bHighlighted = TRUE;
-          snprintf(szLogMsg, sizeof(szLogMsg), "Highlighted move to (%d, %d)", iNewRow, iNewCol);
-          vTraceMsg(szLogMsg);
+    if ( iNewRow >= 0 && iNewRow < ROW_SQUARE_COUNT && iNewCol >= 0 && iNewCol < COLUMN_SQUARE_COUNT ) {
+      if (pBoard[iNewRow][iNewCol].ui8Side != pBoard[iRow][iCol].ui8Side) { // Evitar aliados
+        pBoard[iNewRow][iNewCol].bHighlighted = TRUE;
+        vHighlightSquare(pBoard, iNewRow, iNewCol);
+        vSetSquareThreat(pBoard, iNewRow, iNewCol, pBoard[iNewRow][iNewCol].ui8Side);
       }
     }
   }
@@ -292,7 +305,8 @@ void vHighlightBishopMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_
       if (pBoard[iNewRow][iNewCol].ui8Side == pBoard[iRow][iCol].ui8Side) // Peça do mesmo lado
         break;
 
-      pBoard[iNewRow][iNewCol].bHighlighted = TRUE;
+      vHighlightSquare(pBoard, iNewRow, iNewCol);
+      vSetSquareThreat(pBoard, iNewRow, iNewCol, pBoard[iNewRow][iNewCol].ui8Side);
 
       if (pBoard[iNewRow][iNewCol].ui8Side != NEUTRAL_SIDE) // Obstáculo encontrado
         break;
@@ -512,6 +526,7 @@ void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int
   vTraceBoardRowCol("FROM BOARD", pBoard, iFromRow, iFromCol);
   vTraceBoardRowCol("TO BOARD", pBoard, iToRow, iToCol);
   pBoard[iToRow][iToCol] = pBoard[iFromRow][iFromCol];
+  pBoard[iToRow][iToCol].bHasMoved = TRUE;
   pBoard[iFromRow][iFromCol].pszType = SQUARE_TYPE_BLANK;
   pBoard[iFromRow][iFromCol].ui8Side = NEUTRAL_SIDE;
   vTraceEnd();

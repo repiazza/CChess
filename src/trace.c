@@ -187,3 +187,30 @@ void vTraceEnvp(char **envp) {
   }
 }
 
+void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
+  char szDbg[256] = "";
+  memset(szDbg, 0x00, sizeof(szDbg));
+  vConvertBoard2String(szDbg, sizeof(szDbg), pBoard);
+  vTraceMsg(szDbg);
+}
+
+void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
+  vTraceVarArgs(
+    "\n=================%s================\n"
+    "TYPE.......: [%s]\n"
+    "COLOR......: [%d]\n"
+    "SIDE.......: [%d]\n"
+    "Highlighted: [%d]\n"
+    "SELECTED...: [%d]\n"
+    "TRHEAT.....: [%s]\n"
+    "===================================\n",
+    bStrIsEmpty(kpszMsg) ? "=" : kpszMsg,
+    pBoard[iRow][iCol].pszType,
+    pBoard[iRow][iCol].ui8Color,
+    pBoard[iRow][iCol].ui8Side,
+    pBoard[iRow][iCol].bHighlighted,
+    pBoard[iRow][iCol].bSelected,
+    gkpszThreatType[pBoard[iRow][iCol].ui8Threat]
+  );
+}
+

@@ -5,6 +5,14 @@
 #include <string.h>
 #include <movement.h>
 
+const char *gkpszThreatType[] = {
+  "NONE",
+  "FRIENDLY",
+  "ENEMY",
+  "BOTH",
+  NULL
+};
+
 /* Limpa todos os destaques do tabuleiro */
 void vClearHighlights(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   int ii = 0;
@@ -50,6 +58,8 @@ void vInitializeBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT
       pBoard[ii][jj].ui8Side = NEUTRAL_SIDE;               /* Lado inicial */
       pBoard[ii][jj].bHighlighted = FALSE;                 /* Sem destaque */
       pBoard[ii][jj].bSelected = FALSE;
+      pBoard[ii][jj].bHasMoved = FALSE;
+      pBoard[ii][jj].ui8Threat = SQUARE_THREAT_NONE;
     }
   }
 
@@ -101,13 +111,6 @@ void vPrintBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   }
 }
 
-/* Destaca ou remove o destaque de uma casa */
-void vHighlightSquare(STRUCT_SQUARE *pSquare, int bHighlighted) {
-  if ( pSquare ) {
-    pSquare->bHighlighted = bHighlighted;
-  }
-}
-
 void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   int iRow = 0;
   int iCol = 0;
@@ -148,29 +151,4 @@ void vConvertBoard2String(char *pszOutput, size_t lOutputSize, STRUCT_SQUARE pBo
       "\n"
     );
   }
-}
-
-void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  char szDbg[256] = "";
-  memset(szDbg, 0x00, sizeof(szDbg));
-  vConvertBoard2String(szDbg, sizeof(szDbg), pBoard);
-  vTraceMsg(szDbg);
-}
-
-void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol) {
-  vTraceVarArgs(
-    "\n=================%s================\n"
-    "TYPE.......: [%s]\n"
-    "COLOR......: [%d]\n"
-    "SIDE.......: [%d]\n"
-    "Highlighted: [%d]\n"
-    "SELECTED...: [%d]\n"
-    "===================================\n",
-    bStrIsEmpty(kpszMsg) ? "=" : kpszMsg,
-    pBoard[iRow][iCol].pszType,
-    pBoard[iRow][iCol].ui8Color,
-    pBoard[iRow][iCol].ui8Side,
-    pBoard[iRow][iCol].bHighlighted,
-    pBoard[iRow][iCol].bSelected
-  );
 }

@@ -471,7 +471,7 @@ void vDrawClocks(SDL_Renderer *pRenderer, const char *kpszFontPath, const int ki
 }
 
 void vRenderer(SDL_Renderer *pRenderer, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
-  if ( gbRenderer || atoi(gstCmdLine.szClock) ) {
+  if ( gbRenderer /*|| atoi(gstCmdLine.szClock)*/ ) {
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
     SDL_RenderClear(pRenderer);
     
@@ -480,7 +480,7 @@ void vRenderer(SDL_Renderer *pRenderer, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][C
     vDrawFooterRect(pRenderer);
     
     vDrawOpenings(pRenderer, FONT_PATH, 18, pBoard);
-    if ( atoi(gstCmdLine.szClock) ) vDrawClocks(pRenderer, FONT_PATH, 18);
+    // if ( atoi(gstCmdLine.szClock) ) vDrawClocks(pRenderer, FONT_PATH, 18);
     
     SDL_RenderPresent(pRenderer);
     gbRenderer = FALSE;

@@ -28,6 +28,8 @@
     #include <sys/time.h>
   #endif
   
+  #include <board.h>
+  
 /******************************************************************************
  *                                                                            *
  *                             Defines and macros                             *
@@ -36,12 +38,13 @@
   #define DEBUG_MSGS      gstTracePrm.iDebugLevel > 0
   #define DEBUG_MORE_MSGS gstTracePrm.iDebugLevel > 8
 
-
   #define vTraceMsg(FORMAT, ...) vTraceMessage(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
   #define vTraceError(FORMAT, ...) vTraceErr(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
   #define vTraceVarArgs(FORMAT, ...) _vTraceVarArgs(__FILE__, __LINE__, FORMAT, ##__VA_ARGS__)
   #define vTraceBegin() vTraceVarArgs("%s - begin", __func__)
   #define vTraceEnd() vTraceVarArgs("%s - end", __func__)
+  
+  #define vTraceSquare vTraceBoardRowCol
 
 /******************************************************************************
  *                                                                            *
@@ -110,6 +113,9 @@
    * bacagine - 2023-mm-dd - A detailed and excessive sampling of the system's environment variables
    */
   void vTraceEnvp(char **envp);
+  
+  void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
+  void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 
 #endif /* _TRACE_H */
 

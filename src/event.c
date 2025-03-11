@@ -122,13 +122,9 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   
   if ( !bHasAnySelected(pBoard) ) {
     if ( pBoard[iRow][iCol].ui8Side == giCurrentTurn ) {
-      vTraceVarArgs("peca bate");
       vClearHighlights(pBoard);
       vToggleSquareSelection(pBoard, iRow, iCol);
       vHighlightPieceMoves(pBoard, iRow, iCol);
-    }
-    else {
-      vTraceVarArgs("peca nao bate");
     }
   }
   else {
@@ -141,12 +137,21 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
     
     //  Clicamos duas vezes na mesma?
     if ( iSelectedRow == iRow && iSelectedCol == iCol ) {
-      if ( pstBoard->ui8Side == FRIENDLY_SIDE ) {
+      if ( pstBoard->ui8Side == giCurrentTurn ) {
         vClearHighlights(pBoard);
         vToggleSquareSelection(pBoard, iRow, iCol);
         return;
       }
     }
+    // Clicamos em uma outra peca aliada?
+    else if ( pBoard[iRow][iCol].ui8Side == giCurrentTurn ) {
+      vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
+      vClearHighlights(pBoard);
+      vToggleSquareSelection(pBoard, iRow, iCol);
+      vHighlightPieceMoves(pBoard, iRow, iCol);
+      return;
+    }
+    
     // nao, vamos andar ou comer?
     if ( pBoard[iRow][iCol].bHighlighted ) {
       if ( strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) == 0 ) {
@@ -164,11 +169,9 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
       iSelectedRow = -1;
       iSelectedCol = -1;
     }
-    else {
-      iSelectedRow = iRow;
-      iSelectedCol = iCol;
+    else { // Desfazer selecao
       vClearHighlights(pBoard);
-      vHighlightPieceMoves(pBoard, iRow, iCol);
+      vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
     }
   }
 }
@@ -188,6 +191,7 @@ void vCapturePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], 
   pBoard[iDestRow][iDestCol].pszType = strdup(pBoard[iSrcRow][iSrcCol].pszType);
   pBoard[iDestRow][iDestCol].ui8Side = pBoard[iSrcRow][iSrcCol].ui8Side;
   pBoard[iDestRow][iDestCol].ui8Color = pBoard[iSrcRow][iSrcCol].ui8Color;
+  pBoard[iDestRow][iDestCol].bHasMoved = TRUE;
 
   vTraceMsg("Marcar a posição antiga como vazia");
   // Marcar a posição antiga como vazia
