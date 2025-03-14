@@ -29,7 +29,7 @@ typedef enum ENUM_PIECE_IMAGE_INDEX {
   NULL_PIECE_INDEX
 } ENUM_PIECE_IMAGE_INDEX, *PENUM_PIECE_IMAGE_INDEX;
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 const char *gkpaszWhitePiecesImagePath[] = {
   "img/w_pawn_1x.png",
   "img/w_rook_1x.png",
@@ -514,7 +514,7 @@ static void vShowVersion(void) {
 /**
  * Função principal do programa.
  */
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
 int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
 #else
 int SDL_main(int iArgc, char *pszArgv[]) {
@@ -549,7 +549,7 @@ int SDL_main(int iArgc, char *pszArgv[]) {
     vTraceBegin();
     vTraceCommandLine(iArgc, pszArgv);
   }
-  #ifdef LINUX
+  #if defined(LINUX) || defined(APPLE)
   if ( DEBUG_MORE_MSGS ) vTraceEnvp(pszEnvp);
   #endif
 

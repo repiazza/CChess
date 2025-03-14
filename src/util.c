@@ -373,7 +373,7 @@ void vSetLogFile( void ) {
     snprintf( gstTracePrm.szTraceFile, (size_t) sizeof( gstTracePrm.szTraceFile ) - 8, "%s", gstCmdLine.szTraceFile );
     return;
   }
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
   else {
     snprintf( gstTracePrm.szTraceFile, sizeof( gstTracePrm.szTraceFile ), "%s.log", gkpszProgramName );
     return;

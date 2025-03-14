@@ -21,6 +21,7 @@ BINDIR = bin
 # Compiler options
 CCOPT = -Wall -Wextra
 CFLAGS = -I$(INCDIR)
+LDFLAGS = 
 
 # SDL2 libraries
 SDL_LIBS =  -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
@@ -36,10 +37,20 @@ OBJS    = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(SRC:.c=.o))
 ifdef _WIN32
 	CCOPT += -D_WIN32
 	LIBS = -lmingw32 $(SDL_LIBS) -mwindows
-else
+endif
+
+ifdef LINUX
 	CCOPT += -DLINUX
 	LIBS = $(SDL_LIBS)
 endif
+
+ifdef APPLE
+	CCOPT += -DAPPLE
+	LIBS = $(SDL_LIBS)
+	CFLAGS += -I/opt/homebrew/include
+	LDFLAGS +=  -L /opt/homebrew/lib
+endif
+
 
 # Debug flags
 DEBUG_ADD_FLAGS = -O2
@@ -60,7 +71,7 @@ directories:
 
 # Build executable
 $(CCHESS_EXEC): $(OBJS)
-	$(CC) $(CCOPT) $(DEBUG_ADD_FLAGS) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CC) $(CCOPT) $(DEBUG_ADD_FLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 # Compile source files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c

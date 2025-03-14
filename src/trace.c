@@ -6,7 +6,7 @@
 #include <cmdline.h>
 #include <util.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
   #include <sys/time.h>
   #include <sys/types.h>  
   #include <unistd.h>  
@@ -77,7 +77,7 @@ void vSetConfFile( void ) {
     snprintf( gszConfFile, sizeof( gszConfFile ), "%s", gstCmdLine.szConfFile );
     return;
   }
-#ifdef LINUX
+#if defined(LINUX) || defined(APPLE)
   else if ( bFileExist("/etc/cchess.conf") ) {
     snprintf( gszConfFile, sizeof( gszConfFile ), "/etc/cchess.conf" );
     return;
