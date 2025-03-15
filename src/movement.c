@@ -8,7 +8,7 @@ int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUAR
   /* Bloqueia se for peça do mesmo lado */
   if ( pBoard[iRow][iCol].ui8Side == ui8Side )
     return FALSE;
-  if ( iRow < 0 && iRow >= ROW_SQUARE_COUNT && iCol < 0 && iCol >= COLUMN_SQUARE_COUNT )
+  if ( iRow < 0 || iRow >= ROW_SQUARE_COUNT || iCol < 0 || iCol >= COLUMN_SQUARE_COUNT )
     return FALSE;
   /* Permite captura se encontrar peça inimiga, mas interrompe o movimento */
   return (pBoard[iRow][iCol].ui8Side != NEUTRAL_SIDE) ? -1 : 1;
