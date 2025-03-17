@@ -184,14 +184,21 @@ void vTraceCommandLine(int argc, char **argv) {
   int ii = 0;
   vTraceVarArgs("argc [%d]", argc);
   for ( ii = 0; ii < argc; ii++ ) {
-    vTraceVarArgs("%d: [%s]", ii, argv[ii]);
+    vTraceVarArgs("argv %d: [%s]", ii, argv[ii]);
   }
 }
 
 void vTraceEnvp(char **envp) {
   int ii = 0;
   for ( ii = 0; envp[ii]; ii++ ) {
-    vTraceVarArgs("%d: [%s]", ii, envp[ii]);
+    vTraceVarArgs("envp %d: [%s]", ii, envp[ii]);
+  }
+}
+
+void vTraceApple(char **apple) {
+  int ii = 0;
+  for ( ii = 0; apple[ii]; ii++ ) {
+    vTraceVarArgs("apple %d: [%s]", ii, apple[ii]);
   }
 }
 

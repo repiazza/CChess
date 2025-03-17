@@ -37,7 +37,7 @@ ifdef LINUX
 endif
 
 ifdef APPLE
-	CCOPT += -DAPPLE
+	CCOPT += -Wno-main -DAPPLE
 	LIBS = $(SDL_LIBS)
 	CFLAGS += -I/opt/homebrew/include
 	LDFLAGS +=  -L /opt/homebrew/lib
@@ -47,7 +47,11 @@ endif
 # Debug flags
 DEBUG_ADD_FLAGS = -O2
 ifdef DEBUG
-	DEBUG_ADD_FLAGS = -g -ggdb
+  ifdef APPLE
+    DEBUG_ADD_FLAGS = -g
+  else
+    DEBUG_ADD_FLAGS = -g -ggdb
+  endif
 endif
 
 # Default target

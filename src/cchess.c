@@ -522,9 +522,13 @@ static void vShowVersion(void) {
 /**
  * Função principal do programa.
  */
-#if defined(LINUX) || defined(APPLE)
+#ifdef APPLE
+int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[], char *pszApple[]) {
+#endif
+#ifdef LINUX
 int SDL_main(int iArgc, char *pszArgv[], char *pszEnvp[]) {
-#else
+#endif
+#ifdef _WIN32
 int SDL_main(int iArgc, char *pszArgv[]) {
 #endif
   PSTRUCT_BOARD_HISTORY pstHistory = NULL;
@@ -559,6 +563,10 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   }
   #if defined(LINUX) || defined(APPLE)
   if ( DEBUG_MORE_MSGS ) vTraceEnvp(pszEnvp);
+  #endif
+
+  #ifdef APPLE
+  if ( DEBUG_MORE_MSGS ) vTraceApple(pszApple);
   #endif
 
   if ( !bLoadCfgFile(gszConfFile) ) {

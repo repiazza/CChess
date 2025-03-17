@@ -114,6 +114,11 @@
    */
   void vTraceEnvp(char **envp);
   
+  /**
+   * bacagine - 2025-03-17 - A detailed and excessive sampling of the apple main parameter
+   */
+  void vTraceApple(char **apple);
+
   void vTraceBoard(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]);
   void vTraceBoardRowCol(const char *kpszMsg, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol);
 
