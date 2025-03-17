@@ -23,11 +23,11 @@
   #include <cmdline.h>
   #include <trace.h>
   #include <SDL2/SDL_ttf.h>
-  #ifdef LINUX
+  #ifdef _WIN32
+    #include <winbase.h>
+  #else
     #include <sys/stat.h>
     #include <libgen.h>
-  #else
-    #include <winbase.h>
   #endif
   /******************************************************************************
    *                                                                            *

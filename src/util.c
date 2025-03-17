@@ -9,6 +9,7 @@
  */
 
 #include <util.h>
+#include <trace.h>
 
 char *szTokenName[] = {
   "TRACE_FILE",

@@ -14,7 +14,7 @@
     #include <windows.h>
     #define getpid _getpid 
     #define gettimeofday mingw_gettimeofday
-  #elif LINUX
+  #else
     #include <unistd.h>
     #define SDL_main main
     #define _MAX_PATH 256

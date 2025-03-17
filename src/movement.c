@@ -1,8 +1,17 @@
+/**
+ * movement.c
+ * 
+ * Written by Renato Fermi <repiazza@gmail.com> in January 2025
+ * 
+ * Description: Chess written in C
+ */
+
 #include <board.h>
 #include <movement.h>
 #include <util.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <trace.h>
 
 int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
   /* Bloqueia se for peça do mesmo lado */

@@ -1,3 +1,11 @@
+/**
+ * event.c
+ * 
+ * Written by Renato Fermi <repiazza@gmail.com> in January 2025
+ * 
+ * Description: Chess written in C
+ */
+
 #include <event.h>
 #include <trace.h>
 #include <board.h>
@@ -96,6 +104,19 @@ void vToggleTurn(int *piTurn) {
   vTraceVarArgs("Novo turno iniciado [%s]", gkpaszTurns[*piTurn-1]);
 }
 
+int bKingIsChecked = FALSE;
+
+void vKingIsChecked(void) {
+  if ( !bKingIsChecked ) {
+    if ( giCurrentTurn == FRIENDLY_SIDE ) {
+      
+    }
+    else {
+    
+    }
+  }
+}
+
 void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   static int iSelectedRow = -1;
   static int iSelectedCol = -1;
@@ -157,15 +178,17 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
       if ( strcmp(pBoard[iRow][iCol].pszType, SQUARE_TYPE_BLANK) == 0 ) {
         vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
         vMovePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
-        vToggleTurn(&giCurrentTurn);
       }
       else if ( pBoard[iRow][iCol].ui8Side != giCurrentTurn ) {
         vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
         vCapturePiece(pBoard, iSelectedRow, iSelectedCol, iRow, iCol);
-        vToggleTurn(&giCurrentTurn);
       }
-
+      
+      vToggleTurn(&giCurrentTurn);
       vClearHighlights(pBoard);
+
+      vKingIsChecked();
+
       iSelectedRow = -1;
       iSelectedCol = -1;
     }

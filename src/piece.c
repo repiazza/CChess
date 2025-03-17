@@ -1,3 +1,11 @@
+/**
+ * piece.c
+ * 
+ * Written by Renato Fermi <repiazza@gmail.com> in January 2025
+ * 
+ * Description: Chess written in C
+ */
+
 #include <piece.h>
 #include <stdlib.h>
 #include <stdio.h>

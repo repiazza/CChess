@@ -1,3 +1,11 @@
+/**
+ * snapshot.c
+ * 
+ * Written by Renato Fermi <repiazza@gmail.com> in January 2025
+ * 
+ * Description: Chess written in C
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
