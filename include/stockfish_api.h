@@ -35,9 +35,12 @@ typedef struct STRUCT_STOCKFISH {
 
 extern STRUCT_STOCKFISH gstStockfish;
 
+/* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
+#if 0
 extern pid_t pidStockfish;
 extern int fdToStockfish[2];
 extern int fdFromStockfish[2];
+#endif
 
 /**
  * @brief ...

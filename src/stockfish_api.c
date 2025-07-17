@@ -12,9 +12,12 @@
 
 STRUCT_STOCKFISH gstStockfish;
 
+/* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
+#if 0
 pid_t pidStockfish;
 int fdToStockfish[2];
 int fdFromStockfish[2];
+#endif
 
 void vSTOCKFISH_UCI(void) {
   fprintf(stdin, "uci\n");
@@ -76,6 +79,8 @@ int bSTOCKFISH_Init(const char *kpszStockfishPath, const char *kpszMoveTime) {
     vTraceMsg("Move Time: [%s]", gstStockfish.szMoveTime);
   }
 
+  /* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
+#if 0
   if ( pipe(fdToStockfish) < 0 ) {
     perror("pipe to stockfish failed");
     return FALSE;
@@ -91,7 +96,7 @@ int bSTOCKFISH_Init(const char *kpszStockfishPath, const char *kpszMoveTime) {
     perror("fork failed");
     return FALSE;
   }
-
+#endif
   /* bacagine - 17/07/2025 - TODO: Continuar o desenvolvimento da API a partir desse ponto */
 
   if ( DEBUG_MSGS ) vTraceEnd();
@@ -100,7 +105,9 @@ int bSTOCKFISH_Init(const char *kpszStockfishPath, const char *kpszMoveTime) {
 }
 
 int bSTOCKFISH_IsStarted(void) {
-  return !(pidStockfish < 0);
+  /* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
+/*  return !(pidStockfish < 0); */
+  return FALSE;
 }
 
 void vSTOCKFISH_End(void) {
