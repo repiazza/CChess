@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <trace.h>
+#include <piece.h>
+#include <stockfish_api.h>
+
+PSTRUCT_MOVE_LIST gpstMoveList = NULL;
 
 int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side) {
   /* Bloqueia se for peça do mesmo lado */
@@ -238,13 +242,14 @@ int bValidateCastle(
     int iTargetCol) {
   // Determina se é um roque curto ou longo
   int iColStep = (iTargetCol > iStartCol) ? 1 : -1;
+  int iCol = 0;
 
   // Verifica se a peça é o rei
   if (strcmp(pBoard[iStartRow][iStartCol].pszType, SQUARE_TYPE_KING_PIECE) != 0)
     return FALSE;
 
   // Verifica se todas as casas entre o rei e a torre estão livres
-  for ( int iCol = iStartCol + iColStep; iCol != iTargetCol; iCol += iColStep ) {
+  for ( iCol = iStartCol + iColStep; iCol != iTargetCol; iCol += iColStep ) {
     if (pBoard[iStartRow][iCol].ui8Side != NEUTRAL_SIDE)
       return FALSE; // Caminho bloqueado
   }
@@ -530,13 +535,93 @@ void vPrintDirections(const int *aiDirections) {
     printf("Leste\n");
 }
 
+void vTraceMoveList(void) {
+  STRUCT_MOVE_LIST *mv = NULL;
+  int iMoveCt = 1;
+  for ( mv = gpstMoveList; mv; mv = mv->pstNext ) {
+    vTraceMsg("Movement [%d] [%s]", iMoveCt, mv->stMovement.szMovement);
+    iMoveCt++;
+  }
+}
+
+int bCreateMoveList(void) {
+  gpstMoveList = NULL;
+  return TRUE;
+}
+
+void vDestroyMoveList(void) {
+  PSTRUCT_MOVE_LIST pstWrkMoveList = gpstMoveList;
+  while ( pstWrkMoveList ) {
+    PSTRUCT_MOVE_LIST pstNext = pstWrkMoveList->pstNext;
+    free(pstWrkMoveList);
+    pstWrkMoveList = pstNext;
+  }
+  gpstMoveList = NULL;
+}
+
+int bMoveListIsEmpty(void) {
+  return (gpstMoveList == NULL);
+}
+
+int bAddMoveToList(STRUCT_MOVEMENT *pstMovement) {
+  const char kachRows[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
+  PSTRUCT_MOVE_LIST pstWrkMoveList = (STRUCT_MOVE_LIST *) calloc(1, sizeof(STRUCT_MOVE_LIST));
+
+  if ( !pstWrkMoveList ) return FALSE;
+  pstWrkMoveList->stMovement = *pstMovement;
+  snprintf(
+    pstWrkMoveList->stMovement.szMovement,
+    sizeof(pstWrkMoveList->stMovement.szMovement),
+    "%c%d%c%d",
+    kachRows[pstMovement->iStartY],
+    pstMovement->iStartX+1,
+    kachRows[pstMovement->iEndY],
+    pstMovement->iEndX+1
+  );
+
+  if ( !gpstMoveList ) {
+    gpstMoveList = pstWrkMoveList;
+  }
+  else {
+    PSTRUCT_MOVE_LIST pstLast = gpstMoveList;
+    while ( pstLast->pstNext )
+      pstLast = pstLast->pstNext;
+    pstLast->pstNext = pstWrkMoveList;
+  }
+
+  return TRUE;
+}
+
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol) {
-  vTraceBegin();
-  vTraceBoardRowCol("FROM BOARD", pBoard, iFromRow, iFromCol);
-  vTraceBoardRowCol("TO BOARD", pBoard, iToRow, iToCol);
+  STRUCT_MOVEMENT stMovemnt;
+
+  if ( DEBUG_MSGS ) {
+    vTraceBegin();
+    vTraceBoardRowCol("FROM BOARD", pBoard, iFromRow, iFromCol);
+    vTraceBoardRowCol("TO BOARD", pBoard, iToRow, iToCol);
+  }
+
   pBoard[iToRow][iToCol] = pBoard[iFromRow][iFromCol];
   pBoard[iToRow][iToCol].bHasMoved = TRUE;
   pBoard[iFromRow][iFromCol].pszType = SQUARE_TYPE_BLANK;
   pBoard[iFromRow][iFromCol].ui8Side = NEUTRAL_SIDE;
-  vTraceEnd();
+
+  stMovemnt.iStartY = iFromCol;
+  stMovemnt.iStartX = iFromRow;
+  stMovemnt.iEndY = iToCol;
+  stMovemnt.iEndX = iToRow;
+
+  if ( !bAddMoveToList(&stMovemnt) ) {
+    if ( DEBUG_MSGS ) vTraceMsg("W: Falha ao adicionar movimento na lista do stockfish_api");
+  }
+
+  if ( DEBUG_MORE_MSGS ) vTraceMoveList();
+
+  /* Comentado devido ao modulo api do stockfish ainda estar em fase de desenvolvimento */
+#if 0
+  bSTOCKFISH_GetBestMovement();
+  if ( DEBUG_MORE_MSGS ) vTraceMsg("The best move is [%s]", gstStockfish.szBestMove);
+#endif
+
+  if ( DEBUG_MSGS ) vTraceEnd();
 }

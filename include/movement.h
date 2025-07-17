@@ -69,7 +69,15 @@ typedef struct STRUCT_MOVEMENT {
   int iEndX;
   int iEndY;
   uint16_t ui16MovementFlags;
+  char szMovement[32];
 } STRUCT_MOVEMENT, *PSTRUCT_MOVEMENT;
+
+typedef struct STRUCT_MOVE_LIST {
+  STRUCT_MOVEMENT stMovement;
+  struct STRUCT_MOVE_LIST *pstNext;
+} STRUCT_MOVE_LIST, *PSTRUCT_MOVE_LIST;
+
+extern PSTRUCT_MOVE_LIST gpstMoveList;
 
 int iValidateSquareHighlight(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
 void vHighlightRookMoves(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iRow, int iCol, uint8_t ui8Side);
@@ -92,6 +100,36 @@ void vGetPieceMovementAttributes(const char *pszType, uint8_t ui8Side, int *piMa
 int iValidateMove(PSTRUCT_MOVEMENT pMovement);
 void vCalculateDirections(int iX, int iY, int *aiDirections);
 void vPrintDirections(const int *aiDirections);
+
+/**
+ * @brief Loga todos os moviementos jogados na partida ate o momento atual
+ */
+void vTraceMoveList(void);
+
+/**
+ * @brief Inicializa a lista global de movimentos
+ *
+ * @return int
+ */
+int bCreateMoveList(void);
+
+/**
+ * @brief Verifica se a lista de movimentos esta vazia
+ *
+ * @return TRUE Lista vazia
+ * @return FALSE Lista nao esta vazia
+ */
+int bMoveListIsEmpty(void);
+
+/**
+ * @brief Adiciona um movimento na lista de movimentos
+ *
+ * @param pszMovement Movimento a ser adicionado na lista
+ *
+ * @return TRUE
+ */
+int bAddMoveToList(STRUCT_MOVEMENT *pstMovement);
+
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol);
 
 #endif /* MOVEMENT_H */
