@@ -22,6 +22,7 @@
 #include <rect.h>
 #include <cmdline.h>
 #include <openings.h>
+#include <stockfish_api.h>
 
 /* Inicializações de fontes */
 #define FONT_PATH "./fonts/FiraCode.ttf" /* Substitua pelo caminho correto */
@@ -575,6 +576,13 @@ int SDL_main(int iArgc, char *pszArgv[]) {
     exit(EXIT_FAILURE);
   }
   
+  /* Comentado devido ao modulo api do stockfish ainda estar em fase de desenvolvimento */
+#if 0
+  if ( !bSTOCKFISH_Init(gstCmdLine.szStockfish, NULL) ) {
+    if ( DEBUG_MSGS ) vTraceMsg("Erro ao inicializar a stockfish_api.h");
+  }
+#endif
+
   if ( !bInitSDL(SDL_INIT_VIDEO) )
     return -1;
 
@@ -587,14 +595,14 @@ int SDL_main(int iArgc, char *pszArgv[]) {
     SDL_WINDOW_SHOWN
   );
   if ( !pWindow ) {
-    vTraceError("Erro ao criar janela: %s\n", SDL_GetError());
+    if ( DEBUG_MSGS ) vTraceError("Erro ao criar janela: %s\n", SDL_GetError());
     vEndSDL(pstThread, pRenderer, pWindow);
     return -1;
   }
 
   pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
   if ( !pRenderer ) {
-    vTraceError("Erro ao criar renderer: %s\n", SDL_GetError());
+    if ( DEBUG_MSGS ) vTraceError("Erro ao criar renderer: %s\n", SDL_GetError());
     vEndSDL(pstThread, pRenderer, pWindow);
     return -1;
   }
@@ -604,7 +612,7 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   
   pstThread = SDL_CreateThread(iClockThread, "ClockThread", NULL);
   if ( !pstThread ) {
-    vTraceError("Erro ao criar thread: %s\n", SDL_GetError());
+    if ( DEBUG_MSGS ) vTraceError("Erro ao criar thread: %s\n", SDL_GetError());
     vEndSDL(pstThread, pRenderer, pWindow);
     return -1;
   }
@@ -624,7 +632,13 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   
   vEndSDL(pstThread, pRenderer, pWindow);
 
-  vTraceEnd();
+  /* Comentado devido ao modulo api do stockfish ainda estar em fase de desenvolvimento */
+#if 0
+  if ( bSTOCKFISH_IsStarted() )
+    vSTOCKFISH_End();
+#endif
+
+  if ( DEBUG_MSGS ) vTraceEnd();
 
   return 0;
 }
