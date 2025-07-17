@@ -16,6 +16,7 @@ char *szTokenName[] = {
   "DEBUG_LEVEL",
   "WINDOW_RESOLUTION",
   "CLOCK",
+  "STOCKFISH",
   NULL
 };
 
@@ -238,6 +239,11 @@ int iParseCfgLine( char *pszLineContents ) {
     case CLOCK: {
       memset(gstCmdLine.szClock, 0x00, sizeof(gstCmdLine.szClock));
       pDestVar = gstCmdLine.szClock;
+      break;
+    }
+    case STOCKFISH: {
+      memset(gstCmdLine.szStockfish, 0x00, sizeof(gstCmdLine.szStockfish));
+      pDestVar = gstCmdLine.szStockfish;
       break;
     }
     default               : return 0;

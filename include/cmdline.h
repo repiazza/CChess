@@ -59,6 +59,7 @@
     char szWinHeight [_MAX_PATH];
     char szWinWidth  [_MAX_PATH];
     char szClock     [8];
+    char szStockfish  [_MAX_PATH];
   } STRUCT_COMMAND_LINE;
 
 

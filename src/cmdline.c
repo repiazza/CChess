@@ -21,7 +21,7 @@ STRUCT_CMDLINE astCmdOpt[] = {
 /* 00 */
   { "help",        "h",                  CMDDATA_NODATA,            CMDTYPE_NULL,                    "",
      FALSE,         "",                   NULL,                      0,
-    "Show this message and exit"
+    "Show this message and exit."
   },
 /* 01 */
   { "version",     "v",                  CMDDATA_NODATA,            CMDTYPE_NULL,                    "",
@@ -31,32 +31,37 @@ STRUCT_CMDLINE astCmdOpt[] = {
 /* 02 */
   { "trace",       "t",                  CMDDATA_REQUIRED,          CMDTYPE_STR,                     "<file>",
      FALSE,         "log/cchess.log",       gstCmdLine.szTraceFile,    sizeof(gstCmdLine.szTraceFile),
-    "<file> is the path of the debug file"
+    "<file> is the path of the debug file."
   },
 /* 03 */
   { "debug-level", "d",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "0",                  gstCmdLine.szDebugLevel,   sizeof(gstCmdLine.szDebugLevel),
-    "<number> is the level of debug level"
+    "<number> is the level of debug level."
   },
 /* 04 */
-  { "conf-file",   "C",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
+  { "conf-file",    "C",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "0",                  gstCmdLine.szConfFile,     sizeof(gstCmdLine.szConfFile),
-    "<file> is the path of the configuration file"
+    "<file> is the path of the configuration file."
   },
 /* 05 */
   { "win-heigth",  "H",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "0",                  gstCmdLine.szWinHeight,    sizeof(gstCmdLine.szWinHeight),
-    "<number> is the Window Height"
+    "<number> is the Window Height."
   },
 /* 06 */
   { "win-width",   "W",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "0",                  gstCmdLine.szWinWidth,     sizeof(gstCmdLine.szWinWidth),
-    "<number> is the Window Width"
+    "<number> is the Window Width."
   },
 /* 06 */
   { "clock",       "c",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<number>",
      FALSE,         "1",                  gstCmdLine.szClock,        sizeof(gstCmdLine.szClock),
-    "<number> define if play with clock (default is 1)"
+    "<number> define if play with clock (default is 1)."
+  },
+/* 07 */
+  { "stockfish",   "s",                  CMDDATA_REQUIRED,          CMDTYPE_INT,                     "<path>",
+    FALSE,         "",                   gstCmdLine.szStockfish,     sizeof(gstCmdLine.szStockfish),
+    "<path> is the path of stockfish binary."
   },
   /* NOTE: NULL indicates the end of the array, NEVER REMOVE IT! */
   { NULL,         NULL,                   CMDDATA_NULL,             CMDTYPE_NULL,                    "",
