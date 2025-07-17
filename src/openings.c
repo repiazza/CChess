@@ -1,5 +1,5 @@
 /**
- * openings.h
+ * openings.c
  * 
  * Written by Gustavo Bacagine <gustavo.bacagine@protonmail.com>
  * 
