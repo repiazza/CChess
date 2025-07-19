@@ -31,12 +31,12 @@ typedef struct STRUCT_STOCKFISH {
   char szBuffer[2048];
   char szMoveTime[16];
   char szBestMove[32];
+  int bStockfishOn;
 } STRUCT_STOCKFISH, *PSTRUCT_STOCKFISH;
 
 extern STRUCT_STOCKFISH gstStockfish;
 
-/* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
-#if 0
+#ifdef LINUX
 extern pid_t pidStockfish;
 extern int fdToStockfish[2];
 extern int fdFromStockfish[2];

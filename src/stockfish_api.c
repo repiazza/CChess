@@ -12,41 +12,51 @@
 
 STRUCT_STOCKFISH gstStockfish;
 
-/* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
-#if 0
-pid_t pidStockfish;
+#ifdef LINUX
+pid_t pidStockfish = -1;
 int fdToStockfish[2];
 int fdFromStockfish[2];
 #endif
 
+FILE *fpWrite = NULL;
+FILE *fpRead = NULL;
+
 void vSTOCKFISH_UCI(void) {
-  fprintf(stdin, "uci\n");
-  fflush(stdin);
+  if ( !fpWrite || !fpRead ) return;
+  fprintf(fpWrite, "uci\n");
+  fflush(fpWrite);
+  while ( fgets(gstStockfish.szBuffer, sizeof(gstStockfish.szBuffer), fpRead) ) {
+    gstStockfish.szBuffer[strcspn(gstStockfish.szBuffer, "\r\n")] = '\0';
+    if ( !strcmp(gstStockfish.szBuffer, "uciok") ) break;
+  }
 }
 
 void vSTOCKFISH_Position(void) {
   STRUCT_MOVE_LIST *mv = NULL;
   char szPositions[2048] = "";
+  if ( !fpWrite || !fpRead ) return;
   memset(szPositions, 0x00, sizeof(szPositions));
   for ( mv = gpstMoveList; mv; mv = mv->pstNext ) {
     strcat(szPositions, mv->stMovement.szMovement);
     if ( mv->pstNext )
       strcat(szPositions, " ");
   }
-  fprintf(stdin, "position startpos moves %s\n", szPositions);
-  fflush(stdin);
+  fprintf(fpWrite, "position startpos moves %s\n", szPositions);
+  fflush(fpWrite);
 }
 
 void vSTOCKFISH_GoMovetime(void) {
-  fprintf(stdin, "go movetime %s\n", gstStockfish.szMoveTime);
-  fflush(stdin);
+  if ( !fpWrite || !fpRead ) return;
+  fprintf(fpWrite, "go movetime %s\n", gstStockfish.szMoveTime);
+  fflush(fpWrite);
 }
 
 int bSTOCKFISH_IsReady(void) {
   int bRsl = FALSE;
-  fprintf(stdin, "isready\n");
-  fflush(stdin);
-  fgets(gstStockfish.szBuffer, sizeof(gstStockfish.szBuffer), stdin);
+  if ( !fpWrite || !fpRead ) return bRsl;
+  fprintf(fpWrite, "isready\n");
+  fflush(fpWrite);
+  fgets(gstStockfish.szBuffer, sizeof(gstStockfish.szBuffer), fpRead);
   gstStockfish.szBuffer[strcspn(gstStockfish.szBuffer, "\r\n")] = '\0';
   if ( !strcmp(gstStockfish.szBuffer, "readyok") )
     bRsl = TRUE;
@@ -54,8 +64,9 @@ int bSTOCKFISH_IsReady(void) {
 }
 
 void vSTOCKFISH_Quit(void) {
-  fprintf(stdin, "quit\n");
-  fflush(stdin);
+  if ( !fpWrite || !fpRead ) return;
+  fprintf(fpWrite, "quit\n");
+  fflush(fpWrite);
 }
 
 int bSTOCKFISH_Init(const char *kpszStockfishPath, const char *kpszMoveTime) {
@@ -78,26 +89,50 @@ int bSTOCKFISH_Init(const char *kpszStockfishPath, const char *kpszMoveTime) {
     vTraceMsg("Stockfish Path: [%s]", kpszStockfishPath);
     vTraceMsg("Move Time: [%s]", gstStockfish.szMoveTime);
   }
-
-  /* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
-#if 0
+#ifdef LINUX
   if ( pipe(fdToStockfish) < 0 ) {
-    perror("pipe to stockfish failed");
+    if ( DEBUG_MSGS ) vTraceMsg("pipe to stockfish failed: [%s]", strerror(errno));
     return FALSE;
   }
 
   if ( pipe(fdFromStockfish) < 0 ) {
-    perror("pipe to stockfish failed");
+    if ( DEBUG_MSGS ) vTraceMsg("pipe to stockfish failed: [%s]", strerror(errno));
     return FALSE;
   }
 
   pidStockfish = fork();
   if ( pidStockfish < 0 ) {
-    perror("fork failed");
+    if ( DEBUG_MSGS ) vTraceMsg("fork failed: [%s]", strerror(errno));
     return FALSE;
   }
+
+  if ( pidStockfish == 0 ) {
+    dup2(fdToStockfish[0], STDIN_FILENO);
+    dup2(fdFromStockfish[1], STDOUT_FILENO);
+
+    close(fdToStockfish[0]);
+    close(fdToStockfish[1]);
+    close(fdFromStockfish[0]);
+    close(fdFromStockfish[1]);
+
+    execlp(kpszStockfishPath, kpszStockfishPath, NULL);
+    if ( DEBUG_MSGS ) vTraceMsg("exec failed: [%s]", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  else {
+    close(fdToStockfish[0]);
+    close(fdFromStockfish[1]);
+
+    fpWrite = fdopen(fdToStockfish[1], "w");
+    fpRead = fdopen(fdFromStockfish[0], "r");
+
+    if ( !fpWrite || !fpRead ) {
+      if ( DEBUG_MSGS ) vTraceMsg("fdopen failed: [%s]", strerror(errno));
+      return FALSE;
+    }
+  }
 #endif
-  /* bacagine - 17/07/2025 - TODO: Continuar o desenvolvimento da API a partir desse ponto */
+  gstStockfish.bStockfishOn = TRUE;
 
   if ( DEBUG_MSGS ) vTraceEnd();
 
@@ -105,16 +140,32 @@ int bSTOCKFISH_Init(const char *kpszStockfishPath, const char *kpszMoveTime) {
 }
 
 int bSTOCKFISH_IsStarted(void) {
-  /* bacagine - 17/07/2025 - Comentei temporariamente para impedir falhas na compilacao no Windows */
-/*  return !(pidStockfish < 0); */
-  return FALSE;
+  return gstStockfish.bStockfishOn;
 }
 
 void vSTOCKFISH_End(void) {
   if ( DEBUG_MSGS ) vTraceBegin();
+
   vSTOCKFISH_Quit();
-  pclose(stdin);
+
+  if ( fpWrite ) {
+    fclose(fpWrite);
+    fpWrite = NULL;
+  }
+
+  if ( fpRead ) {
+    fclose(fpRead);
+    fpRead = NULL;
+  }
+#ifdef LINUX
+  if ( pidStockfish > 0 ) {
+    int iStatus = 0;
+    waitpid(pidStockfish, &iStatus, 0);
+    pidStockfish = -1;
+  }
+#endif
   memset(&gstStockfish, 0x00, sizeof(gstStockfish));
+
   if ( DEBUG_MSGS ) vTraceEnd();
 }
 
@@ -139,7 +190,7 @@ int bSTOCKFISH_GetBestMovement(void) {
 
   vSTOCKFISH_Position();
   vSTOCKFISH_GoMovetime();
-  while ( fgets(gstStockfish.szBuffer, sizeof(gstStockfish.szBuffer), stdin) ) {
+  while ( fgets(gstStockfish.szBuffer, sizeof(gstStockfish.szBuffer), fpRead) ) {
     if ( strstr(gstStockfish.szBuffer, "bestmove") ) {
       break;
     }
@@ -152,6 +203,8 @@ int bSTOCKFISH_GetBestMovement(void) {
     snprintf(gstStockfish.szBestMove, sizeof(gstStockfish.szBestMove), "%s", pTok);
   else
     gstStockfish.szBestMove[0] = '\0';
+
+
 
   if ( DEBUG_MORE_MSGS ) vTraceEnd();
 

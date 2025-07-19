@@ -10,6 +10,7 @@
 #include <trace.h>
 #include <board.h>
 #include <movement.h>
+#include <stockfish_api.h>
 
 extern int gbRenderer;
 
@@ -117,6 +118,55 @@ void vKingIsChecked(void) {
   }
 }
 
+void vConvertUciToRowCol(const char *kpszMovement, STRUCT_MOVEMENT *pstMovement) {
+  int ii = 0;
+  struct {
+    int iCol;
+    char chCol;
+  } astBoardCols[] = {
+    { 0, 'a' },
+    { 1, 'b' },
+    { 2, 'c' },
+    { 3, 'd' },
+    { 4, 'e' },
+    { 5, 'f' },
+    { 6, 'g' },
+    { 7, 'h' }
+  };
+  char szAux[2] = "";
+  memset(szAux, 0x00, sizeof(szAux));
+
+  vTraceMsg("kpszMovement [%s]", kpszMovement);
+  vTraceMsg("                 ch|X|d");
+  vTraceMsg("kpszMovement[0]=[%c][%X][%d]", kpszMovement[0], kpszMovement[0], kpszMovement[0]);
+  vTraceMsg("kpszMovement[1]=[%c][%X][%d]", kpszMovement[1], kpszMovement[1], kpszMovement[1]);
+  vTraceMsg("kpszMovement[2]=[%c][%X][%d]", kpszMovement[2], kpszMovement[2], kpszMovement[2]);
+  vTraceMsg("kpszMovement[3]=[%c][%X][%d]", kpszMovement[3], kpszMovement[3], kpszMovement[3]);
+
+  for ( ii = 0; ii < 7; ii++ ) {
+    if ( kpszMovement[0] == astBoardCols[ii].chCol ) {
+      pstMovement->iStartY = astBoardCols[ii].iCol;
+    }
+  }
+  snprintf(szAux, sizeof(szAux), "%c", kpszMovement[1]);
+  pstMovement->iStartX = atoi(szAux)-1;
+
+  for ( ii = 0; ii < 7; ii++ ) {
+    if ( kpszMovement[2] == astBoardCols[ii].chCol ) {
+      pstMovement->iEndY = astBoardCols[ii].iCol;
+    }
+  }
+  memset(szAux, 0x00, sizeof(szAux));
+  snprintf(szAux, sizeof(szAux), "%c", kpszMovement[3]);
+  pstMovement->iEndX = atoi(szAux)-1;
+
+
+  vTraceMsg("pstMovement->iStartY[%d]", pstMovement->iStartY);
+  vTraceMsg("pstMovement->iStartX[%d]", pstMovement->iStartX);
+  vTraceMsg("pstMovement->iEndY[%d]", pstMovement->iEndY);
+  vTraceMsg("pstMovement->iEndX[%d]", pstMovement->iEndX);
+}
+
 void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT]) {
   static int iSelectedRow = -1;
   static int iSelectedCol = -1;
@@ -125,16 +175,57 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   int iRow = 0;
   int iCol = 0;
   PSTRUCT_SQUARE pstBoard = NULL;
-  
-  if ( pEvent->type != SDL_MOUSEBUTTONDOWN )
-    return;
+
+  if ( bSTOCKFISH_IsStarted() && giCurrentTurn == ENEMY_SIDE ) {
+    if ( DEBUG_MORE_MSGS ) vTraceMoveList();
+    if ( bSTOCKFISH_GetBestMovement() ) {
+      if ( DEBUG_MORE_MSGS ) vTraceMsg("The best move is [%s]", gstStockfish.szBestMove);
+    }
+  }
+
+  if ( bSTOCKFISH_IsStarted() ) {
+    if ( giCurrentTurn == FRIENDLY_SIDE ) {
+      if ( pEvent->type != SDL_MOUSEBUTTONDOWN )
+        return;
+    }
+  }
+  else {
+    if ( pEvent->type != SDL_MOUSEBUTTONDOWN )
+      return;
+  }
   
   gbRenderer = TRUE;
   
-  iMouseX = pEvent->button.x;
-  iMouseY = pEvent->button.y-INFO_RECT_HEIGHT;
-  iRow = (ROW_SQUARE_COUNT - 1) - (iMouseY / SQUARE_SIZE);
-  iCol = iMouseX / SQUARE_SIZE;
+  if ( bSTOCKFISH_IsStarted() ) {
+    if ( giCurrentTurn == FRIENDLY_SIDE ) {
+      iMouseX = pEvent->button.x;
+      iMouseY = pEvent->button.y-INFO_RECT_HEIGHT;
+      iRow = (ROW_SQUARE_COUNT - 1) - (iMouseY / SQUARE_SIZE);
+      iCol = iMouseX / SQUARE_SIZE;
+    }
+    else {
+      STRUCT_MOVEMENT stMovement;
+
+      memset(&stMovement, 0x00, sizeof(stMovement));
+
+      vConvertUciToRowCol(gstStockfish.szBestMove, &stMovement);
+
+      iSelectedCol = stMovement.iStartY;
+      iSelectedRow = stMovement.iStartX;
+      iCol = stMovement.iEndY;
+      iRow = stMovement.iEndX;
+
+      vClearHighlights(pBoard);
+      vToggleSquareSelection(pBoard, iSelectedRow, iSelectedCol);
+      vHighlightPieceMoves(pBoard, iSelectedRow, iSelectedCol);
+    }
+  }
+  else {
+    iMouseX = pEvent->button.x;
+    iMouseY = pEvent->button.y-INFO_RECT_HEIGHT;
+    iRow = (ROW_SQUARE_COUNT - 1) - (iMouseY / SQUARE_SIZE);
+    iCol = iMouseX / SQUARE_SIZE;
+  }
 
   if (iRow < 0 || iRow >= ROW_SQUARE_COUNT || iCol < 0 || iCol >= COLUMN_SQUARE_COUNT)
     return;
@@ -150,7 +241,7 @@ void vHandleMouseClickEvent(SDL_Event *pEvent, STRUCT_SQUARE pBoard[ROW_SQUARE_C
   }
   else {
     pstBoard = pstGetBoardIfSelected(pBoard);
-    
+
     if ( pstBoard ) {
       iSelectedRow = iGetRowFromBoard(pBoard, pstBoard);
       iSelectedCol = iGetColFromBoard(pBoard, pstBoard);

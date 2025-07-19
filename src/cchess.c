@@ -576,12 +576,11 @@ int SDL_main(int iArgc, char *pszArgv[]) {
     exit(EXIT_FAILURE);
   }
   
-  /* Comentado devido ao modulo api do stockfish ainda estar em fase de desenvolvimento */
-#if 0
-  if ( !bSTOCKFISH_Init(gstCmdLine.szStockfish, NULL) ) {
-    if ( DEBUG_MSGS ) vTraceMsg("Erro ao inicializar a stockfish_api.h");
+  if ( !bStrIsEmpty(gstCmdLine.szStockfish) ) {
+    if ( !bSTOCKFISH_Init(gstCmdLine.szStockfish, NULL) ) {
+      if ( DEBUG_MSGS ) vTraceMsg("Erro ao inicializar a stockfish_api.h");
+    }
   }
-#endif
 
   if ( !bInitSDL(SDL_INIT_VIDEO) )
     return -1;
@@ -623,7 +622,7 @@ int SDL_main(int iArgc, char *pszArgv[]) {
       if ( event.type == SDL_QUIT ) {
         gbRunning = FALSE;
       }
-      else if ( event.type == SDL_MOUSEBUTTONDOWN ) {
+      else if ( event.type == SDL_MOUSEBUTTONDOWN || (bSTOCKFISH_IsStarted() && giCurrentTurn == ENEMY_SIDE) ) {
         vHandleMouseClickEvent(&event, pBoard);
       }
     }
@@ -632,11 +631,8 @@ int SDL_main(int iArgc, char *pszArgv[]) {
   
   vEndSDL(pstThread, pRenderer, pWindow);
 
-  /* Comentado devido ao modulo api do stockfish ainda estar em fase de desenvolvimento */
-#if 0
   if ( bSTOCKFISH_IsStarted() )
     vSTOCKFISH_End();
-#endif
 
   if ( DEBUG_MSGS ) vTraceEnd();
 

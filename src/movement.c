@@ -593,7 +593,7 @@ int bAddMoveToList(STRUCT_MOVEMENT *pstMovement) {
 }
 
 void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int iFromRow, int iFromCol, int iToRow, int iToCol) {
-  STRUCT_MOVEMENT stMovemnt;
+  STRUCT_MOVEMENT stMovement;
 
   if ( DEBUG_MSGS ) {
     vTraceBegin();
@@ -606,22 +606,14 @@ void vMovePiece(STRUCT_SQUARE pBoard[ROW_SQUARE_COUNT][COLUMN_SQUARE_COUNT], int
   pBoard[iFromRow][iFromCol].pszType = SQUARE_TYPE_BLANK;
   pBoard[iFromRow][iFromCol].ui8Side = NEUTRAL_SIDE;
 
-  stMovemnt.iStartY = iFromCol;
-  stMovemnt.iStartX = iFromRow;
-  stMovemnt.iEndY = iToCol;
-  stMovemnt.iEndX = iToRow;
+  stMovement.iStartY = iFromCol;
+  stMovement.iStartX = iFromRow;
+  stMovement.iEndY = iToCol;
+  stMovement.iEndX = iToRow;
 
-  if ( !bAddMoveToList(&stMovemnt) ) {
+  if ( !bAddMoveToList(&stMovement) ) {
     if ( DEBUG_MSGS ) vTraceMsg("W: Falha ao adicionar movimento na lista do stockfish_api");
   }
-
-  if ( DEBUG_MORE_MSGS ) vTraceMoveList();
-
-  /* Comentado devido ao modulo api do stockfish ainda estar em fase de desenvolvimento */
-#if 0
-  bSTOCKFISH_GetBestMovement();
-  if ( DEBUG_MORE_MSGS ) vTraceMsg("The best move is [%s]", gstStockfish.szBestMove);
-#endif
 
   if ( DEBUG_MSGS ) vTraceEnd();
 }
