@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#ifdef LINUX
+#ifndef _WIN32
   #include <unistd.h>
   #include <sys/types.h>
   #include <sys/wait.h>
@@ -36,7 +36,7 @@ typedef struct STRUCT_STOCKFISH {
 
 extern STRUCT_STOCKFISH gstStockfish;
 
-#ifdef LINUX
+#ifndef _WIN32
 extern pid_t pidStockfish;
 extern int fdToStockfish[2];
 extern int fdFromStockfish[2];
